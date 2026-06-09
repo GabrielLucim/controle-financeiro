@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { Login } from "../pages/Login/Login.jsx";
+import Login from "../pages/Login/Login.jsx";
 import { Register } from "../pages/Register/Register.jsx";
 import { ForgotPassword } from "../pages/ForgotPassword/ForgotPassword.jsx";
 import { ResetPassword } from "../pages/ResetPassword/ResetPassword.jsx";
