@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import Header from "../../components/Global/Header/Header.jsx";
 import Footer from "../../components/Global/Footer/Footer.jsx";
 import "./Login.css";
+import { authService } from "../../services/authService.js";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -78,14 +79,21 @@ const Login = () => {
         setIsLoading(true);
 
         setTimeout(() => {
-            if (emailOrUsername === "teste@fincontrol.com" && password === "123456") {
+            const existingUsers = authService.getUsers();
+
+            // Procura se o e-mail/usuário e a senha batem com alguém cadastrado
+            const userFound = existingUsers.find(
+                u => u.email === emailOrUsername && u.password === password
+            );
+
+            if (userFound) {
                 if (rememberMe) {
                     localStorage.setItem("@FinControl:rememberMe", JSON.stringify({ emailOrUsername, password }));
                 } else {
                     localStorage.removeItem("@FinControl:rememberMe");
                 }
 
-                login(emailOrUsername, "token-ficticio-123456");
+                login(userFound.email, "token-ficticio-123456");
                 navigate("/app/dashboard", { replace: true });
             } else {
                 setLoginError("E-mail/Nome de Usuário ou senha incorretos.");

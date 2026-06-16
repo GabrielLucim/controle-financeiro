@@ -7,19 +7,16 @@ const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Verifica se já existe um token salvo no navegador ao carregar a página
         const savedToken = localStorage.getItem('@FinControl:token');
         if (savedToken) {
-            // Simulação dos dados do usuário logado
-            setUser({ name: 'Usuário Teste', email: 'teste@fincontrol.com' });
+            setUser({ name: 'Administrador', email: 'admin' });
         }
         setLoading(false);
     }, []);
 
-    // Função para simular o login
     const login = (email, token) => {
-        localStorage.setItem('@FinControl:token', token); // Salva o token fictício no navegador
-        setUser({ name: 'Usuário Teste', email }); // Atualiza o estado global para "logado"
+        localStorage.setItem('@FinControl:token', token);
+        setUser({ name: 'Administrador', email });
     };
 
     // Função para fazer logout

@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "../pages/Login/Login.jsx";
-import { Register } from "../pages/Register/Register.jsx";
+import Register from "../pages/Register/Register.jsx";
 import { ForgotPassword } from "../pages/ForgotPassword/ForgotPassword.jsx";
 import { ResetPassword } from "../pages/ResetPassword/ResetPassword.jsx";
 import { Dashboard } from "../pages/Dashboard/Dashboard.jsx";
@@ -37,7 +37,6 @@ function AppRoutes() {
                     }
                 />
 
-                {/* Se digitar qualquer rota inexistente, joga para o login */}
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
         </BrowserRouter>
