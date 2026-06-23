@@ -4,7 +4,7 @@ import Login from "../pages/Login/Login.jsx";
 import Register from "../pages/Register/Register.jsx";
 import { ForgotPassword } from "../pages/ForgotPassword/ForgotPassword.jsx";
 import { ResetPassword } from "../pages/ResetPassword/ResetPassword.jsx";
-import { Dashboard } from "../pages/Dashboard/Dashboard.jsx";
+import Dashboard from "../pages/Dashboard/Dashboard.jsx";
 import { ChangePassword } from "../pages/ChangePassword/ChangePassword.jsx";
 import { ProtectedRoute } from "../components/ProtectedRoute.jsx";
 

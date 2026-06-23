@@ -93,7 +93,7 @@ const Login = () => {
                     localStorage.removeItem("@FinControl:rememberMe");
                 }
 
-                login(userFound.email, "token-ficticio-123456");
+                login(userFound, "token-ficticio-123456");
                 navigate("/app/dashboard", { replace: true });
             } else {
                 setLoginError("E-mail/Nome de Usuário ou senha incorretos.");

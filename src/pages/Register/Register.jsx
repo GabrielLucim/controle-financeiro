@@ -35,8 +35,8 @@ const Register = () => {
             case 1:
                 return { label: "Fraca", color: "#e74c3c", width: "33%" };
             case 2:
-            case 3:
                 return { label: "Média", color: "#f1c40f", width: "66%" };
+            case 3:
             case 4:
                 return { label: "Forte", color: "#2ecc71", width: "100%" };
             default:

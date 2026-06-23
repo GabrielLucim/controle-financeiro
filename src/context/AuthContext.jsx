@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext({});
 
@@ -7,26 +7,44 @@ const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const savedToken = localStorage.getItem('@FinControl:token');
-        if (savedToken) {
-            setUser({ name: 'Administrador', email: 'admin' });
+        const savedToken = localStorage.getItem("@FinControl:token");
+        const savedUser = localStorage.getItem("@FinControl:user");
+
+        if (savedToken && savedUser) {
+            setUser(JSON.parse(savedUser));
         }
+
         setLoading(false);
     }, []);
 
-    const login = (email, token) => {
-        localStorage.setItem('@FinControl:token', token);
-        setUser({ name: 'Administrador', email });
+    const login = (userData, token) => {
+        localStorage.setItem("@FinControl:token", token);
+
+        localStorage.setItem(
+            "@FinControl:user",
+            JSON.stringify(userData)
+        );
+
+        setUser(userData);
     };
 
-    // Função para fazer logout
     const logout = () => {
-        localStorage.removeItem('@FinControl:token'); // Remove o token do navegador
-        setUser(null); // Atualiza o estado para "deslogado"
+        localStorage.removeItem("@FinControl:token");
+        localStorage.removeItem("@FinControl:user");
+
+        setUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated: !!user, user, login, logout, loading }}>
+        <AuthContext.Provider
+            value={{
+                isAuthenticated: !!user,
+                user,
+                login,
+                logout,
+                loading
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
