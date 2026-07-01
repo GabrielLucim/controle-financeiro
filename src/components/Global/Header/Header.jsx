@@ -27,7 +27,7 @@ const Header = () => {
                     <nav className="header-nav">
 
                         <NavLink
-                            to="/dashboard"
+                            to="/app/dashboard"
                             className={({ isActive }) =>
                                 isActive
                                     ? "header-link active"
@@ -38,7 +38,7 @@ const Header = () => {
                         </NavLink>
 
                         <NavLink
-                            to="/transactions"
+                            to="/app/transações"
                             className={({ isActive }) =>
                                 isActive
                                     ? "header-link active"
@@ -49,7 +49,7 @@ const Header = () => {
                         </NavLink>
 
                         <NavLink
-                            to="/categories"
+                            to="/app/categorias"
                             className={({ isActive }) =>
                                 isActive
                                     ? "header-link active"
@@ -60,7 +60,7 @@ const Header = () => {
                         </NavLink>
 
                         <NavLink
-                            to="/profile"
+                            to="/app/perfil"
                             className={({ isActive }) =>
                                 isActive
                                     ? "header-link active"

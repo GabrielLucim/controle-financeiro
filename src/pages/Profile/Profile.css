@@ -1,0 +1,126 @@
+.profile-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+}
+
+.profile-content {
+    flex: 1;
+    width: 100%;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 24px;
+    box-sizing: border-box;
+}
+
+.profile-card {
+    background: var(--color-surface, #222630);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: var(--shadow-card, 0 12px 32px rgba(0, 0, 0, .3));
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-title {
+    margin: 0;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.profile-subtitle {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 16px;
+    margin-bottom: 36px;
+}
+
+.profile-divider {
+    border: none;
+    border-top: 1px solid #3a3f4b;
+    margin: 36px 0;
+}
+
+.profile-section-title {
+    margin: 0 0 24px;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+}
+
+.profile-label {
+    margin-bottom: 8px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.profile-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1px solid #3b4252;
+    border-radius: 12px;
+    background: #1f2937;
+    color: #ffffff;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s;
+    box-sizing: border-box;
+}
+
+.profile-input:focus {
+    border-color: var(--accent);
+}
+
+.profile-input:disabled {
+    opacity: .75;
+    cursor: not-allowed;
+}
+
+.profile-button {
+    width: 100%;
+    margin-top: 16px;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.profile-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, .25);
+}
+
+@media (max-width: 768px) {
+    .profile-content {
+        margin: 24px auto;
+        padding: 0 16px;
+    }
+
+    .profile-card {
+        padding: 28px 20px;
+    }
+
+    .profile-title {
+        font-size: 28px;
+    }
+
+    .profile-section-title {
+        font-size: 22px;
+    }
+}
