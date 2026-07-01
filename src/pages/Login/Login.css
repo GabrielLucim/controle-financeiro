@@ -4,8 +4,7 @@ body,
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
     background: var(--dashboard-page-bg, #1a1d24);
     box-sizing: border-box;
 }
@@ -14,7 +13,7 @@ body,
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100vh;
+    min-height: 100vh;
     background: var(--dashboard-page-bg, #1a1d24);
     color: var(--color-text-primary, #ffffff);
     font-family: system-ui, -apple-system, sans-serif;
@@ -29,7 +28,6 @@ body,
     justify-content: center;
     padding: 20px;
     box-sizing: border-box;
-    overflow: hidden;
 }
 
 .auth-card {
