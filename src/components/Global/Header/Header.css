@@ -1,7 +1,7 @@
 .page-header {
     display: flex;
     justify-content: space-between;
-    background-color: var(--card-background);
+    background: var(--color-surface, #222630);
     align-items: center;
     padding: 24px 48px;
     width: 100%;

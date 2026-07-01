@@ -15,24 +15,68 @@ function Dashboard() {
     };
 
     return (
-        <><Header /><div className="dashboard-container">
-            <h1 className="dashboard-title">Dashboard</h1>
+        <div className="dashboard-page">
+            <Header />
 
-            <p className="dashboard-subtitle">
-                Área principal do sistema
-            </p>
+            <main className="dashboard-content">
 
-            <p className="dashboard-user">
-                Bem-vindo!
-            </p>
+                <div className="dashboard-header">
+                    <div>
+                        <h1 className="dashboard-title">
+                            Olá, {user?.name || "Usuário"}
+                        </h1>
 
-            <button
-                className="dashboard-button"
-                onClick={handleLogout}
-            >
-                Sair
-            </button>
-        </div><Footer /></>
+                        <p className="dashboard-subtitle">
+                            Bem-vindo ao FinControl.
+                        </p>
+                    </div>
+
+                    <button
+                        className="dashboard-button"
+                        onClick={handleLogout}
+                    >
+                        Sair
+                    </button>
+                </div>
+
+                <section className="dashboard-cards">
+
+                    <div className="dashboard-card">
+                        <h3>Saldo Atual</h3>
+                        <span>R$ 0,00</span>
+                    </div>
+
+                    <div className="dashboard-card">
+                        <h3>Receitas</h3>
+                        <span>R$ 0,00</span>
+                    </div>
+
+                    <div className="dashboard-card">
+                        <h3>Despesas</h3>
+                        <span>R$ 0,00</span>
+                    </div>
+
+                    <div className="dashboard-card">
+                        <h3>Lançamentos</h3>
+                        <span>0</span>
+                    </div>
+
+                </section>
+
+                <section className="dashboard-panel">
+
+                    <h2>Últimas movimentações</h2>
+
+                    <p className="dashboard-empty">
+                        Nenhuma movimentação cadastrada.
+                    </p>
+
+                </section>
+
+            </main>
+
+            <Footer />
+        </div>
     );
 }
 
