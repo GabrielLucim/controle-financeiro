@@ -21,6 +21,7 @@ function Dashboard() {
             <main className="dashboard-content">
 
                 <div className="dashboard-header">
+
                     <div>
                         <h1 className="dashboard-title">
                             Olá, {user?.name || "Usuário"}
@@ -31,12 +32,6 @@ function Dashboard() {
                         </p>
                     </div>
 
-                    <button
-                        className="dashboard-button"
-                        onClick={handleLogout}
-                    >
-                        Sair
-                    </button>
                 </div>
 
                 <section className="dashboard-cards">
@@ -63,13 +58,64 @@ function Dashboard() {
 
                 </section>
 
+                <section className="dashboard-actions">
+
+                    <h2>Ações rápidas</h2>
+
+                    <div className="dashboard-actions-grid">
+
+                        <button
+                            className="action-button"
+                            onClick={() => navigate("/transactions")}
+                        >
+                            Nova Receita
+                        </button>
+
+                        <button
+                            className="action-button"
+                            onClick={() => navigate("/transactions")}
+                        >
+                            Nova Despesa
+                        </button>
+
+                        <button
+                            className="action-button"
+                            onClick={() => navigate("/categories")}
+                        >
+                            Nova Categoria
+                        </button>
+
+                    </div>
+
+                </section>
+
                 <section className="dashboard-panel">
 
-                    <h2>Últimas movimentações</h2>
+                    <div className="dashboard-panel-header">
+                        <h2>Últimas movimentações</h2>
 
-                    <p className="dashboard-empty">
-                        Nenhuma movimentação cadastrada.
-                    </p>
+                        <button
+                            className="see-all-button"
+                            onClick={() => navigate("/transactions")}
+                        >
+                            Ver todas
+                        </button>
+                    </div>
+
+                    <div className="dashboard-table">
+
+                        <div className="dashboard-table-header">
+                            <span>Data</span>
+                            <span>Categoria</span>
+                            <span>Tipo</span>
+                            <span>Valor</span>
+                        </div>
+
+                        <div className="dashboard-empty">
+                            Nenhuma movimentação cadastrada.
+                        </div>
+
+                    </div>
 
                 </section>
 
