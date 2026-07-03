@@ -1,42 +1,23 @@
-export const dashboardMock = {
-    summary: {
-        balance: 5280.50,
-        income: 7200,
-        expenses: 1919.50
+export const dashboardMock = [
+    {
+        id: 1,
+        name: "Carteira Pessoal",
+        description: "Finanças pessoais",
+        balance: 2500.50,
+        members: 1
     },
-
-    chart: [
-        {
-            name: "Receitas",
-            value: 7200
-        },
-        {
-            name: "Despesas",
-            value: 1919.50
-        }
-    ],
-
-    recentTransactions: [
-        {
-            id: 1,
-            description: "Salário",
-            value: 4500,
-            type: "income",
-            date: "01/07/2026"
-        },
-        {
-            id: 2,
-            description: "Mercado",
-            value: -320.80,
-            type: "expense",
-            date: "03/07/2026"
-        },
-        {
-            id: 3,
-            description: "Internet",
-            value: -120,
-            type: "expense",
-            date: "05/07/2026"
-        }
-    ]
-};
+    {
+        id: 2,
+        name: "Casa",
+        description: "Despesas da casa",
+        balance: 1200.00,
+        members: 3
+    },
+    {
+        id: 3,
+        name: "Faculdade",
+        description: "Custos da faculdade",
+        balance: -350.00,
+        members: 2
+    }
+];

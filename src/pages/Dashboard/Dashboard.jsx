@@ -1,8 +1,9 @@
 import React from "react";
-import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
+import { dashboardMock } from "../../mocks/dashboardMock";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -14,116 +15,54 @@ function Dashboard() {
         navigate("/login");
     };
 
+    const openWallet = (id) => {
+        navigate(`/app/wallets/${id}`);
+    };
+
     return (
         <div className="dashboard-page">
             <Header />
-
             <main className="dashboard-content">
-
                 <div className="dashboard-header">
-
                     <div>
                         <h1 className="dashboard-title">
                             Olá, {user?.name || "Usuário"}
                         </h1>
-
                         <p className="dashboard-subtitle">
-                            Bem-vindo ao FinControl.
+                            Suas carteiras financeiras
                         </p>
                     </div>
-
                 </div>
-
-                <section className="dashboard-cards">
-
-                    <div className="dashboard-card">
-                        <h3>Saldo Atual</h3>
-                        <span>R$ 0,00</span>
-                    </div>
-
-                    <div className="dashboard-card">
-                        <h3>Receitas</h3>
-                        <span>R$ 0,00</span>
-                    </div>
-
-                    <div className="dashboard-card">
-                        <h3>Despesas</h3>
-                        <span>R$ 0,00</span>
-                    </div>
-
-                    <div className="dashboard-card">
-                        <h3>Lançamentos</h3>
-                        <span>0</span>
-                    </div>
-
-                </section>
-
-                <section className="dashboard-actions">
-
-                    <h2>Ações rápidas</h2>
-
-                    <div className="dashboard-actions-grid">
-
-                        <button
-                            className="action-button"
-                            onClick={() => navigate("/transactions")}
+                <section className="wallet-grid">
+                    {dashboardMock.map(wallet => (
+                        <div
+                            key={wallet.id}
+                            className="wallet-card"
+                            onClick={() => openWallet(wallet.id)}
                         >
-                            Nova Receita
-                        </button>
+                            <h3>{wallet.name}</h3>
+                            <p>{wallet.description}</p>
+                            <div className="wallet-info">
+                                <span
+                                    className={`wallet-balance ${wallet.balance >= 0 ? "positive" : "negative"
+                                        }`}
+                                >
+                                    Saldo: R$ {wallet.balance.toFixed(2)}
+                                </span>
 
-                        <button
-                            className="action-button"
-                            onClick={() => navigate("/transactions")}
-                        >
-                            Nova Despesa
-                        </button>
-
-                        <button
-                            className="action-button"
-                            onClick={() => navigate("/categories")}
-                        >
-                            Nova Categoria
-                        </button>
-
-                    </div>
-
-                </section>
-
-                <section className="dashboard-panel">
-
-                    <div className="dashboard-panel-header">
-                        <h2>Últimas movimentações</h2>
-
-                        <button
-                            className="see-all-button"
-                            onClick={() => navigate("/transactions")}
-                        >
-                            Ver todas
-                        </button>
-                    </div>
-
-                    <div className="dashboard-table">
-
-                        <div className="dashboard-table-header">
-                            <span>Data</span>
-                            <span>Categoria</span>
-                            <span>Tipo</span>
-                            <span>Valor</span>
+                                <span className="wallet-members">
+                                    {wallet.members} {wallet.members === 1 ? "membro" : "membros"}
+                                </span>
+                            </div>
                         </div>
-
-                        <div className="dashboard-empty">
-                            Nenhuma movimentação cadastrada.
-                        </div>
-
+                    ))}
+                    <div className="wallet-card add">
+                        <span>+ Nova Carteira</span>
                     </div>
-
                 </section>
-
             </main>
-
             <Footer />
         </div>
     );
 }
-
 export default Dashboard;
