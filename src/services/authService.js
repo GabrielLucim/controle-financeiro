@@ -57,5 +57,55 @@ export const authService = {
         authService.saveUsers(users);
 
         return newUser;
+    },
+
+    login: async (email, password) => {
+        const users = authService.getUsers();
+
+        const user = users.find(
+            u =>
+                u.email === email &&
+                u.password === password
+        );
+
+        if (!user) {
+            throw new Error("E-mail ou senha inválidos.");
+        }
+
+        return {
+            user: {
+                name: user.name,
+                email: user.email
+            },
+            token: "mock-token"
+        };
+    },
+
+    changePassword: async (
+        email,
+        currentPassword,
+        newPassword
+    ) => {
+        const users = authService.getUsers();
+
+        const index = users.findIndex(
+            user => user.email === email
+        );
+
+        if (index === -1) {
+            throw new Error("Usuário não encontrado.");
+        }
+
+        if (
+            users[index].password !== currentPassword
+        ) {
+            throw new Error("Senha atual incorreta.");
+        }
+
+        users[index].password = newPassword;
+
+        authService.saveUsers(users);
+
+        return true;
     }
 };
