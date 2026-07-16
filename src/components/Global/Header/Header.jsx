@@ -4,7 +4,14 @@ import { useAuth } from "../../../context/AuthContext";
 import "./Header.css";
 
 const Header = () => {
-    const { user, logout, isAuthenticated } = useAuth();
+
+    const {
+        user,
+        logout,
+        isAuthenticated,
+        loading
+    } = useAuth();
+
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -17,12 +24,12 @@ const Header = () => {
 
             <div
                 className="logo"
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/app/dashboard")}
             >
                 FinControl
             </div>
 
-            {isAuthenticated && (
+            {!loading && isAuthenticated && (
                 <>
                     <nav className="header-nav">
 
@@ -38,7 +45,7 @@ const Header = () => {
                         </NavLink>
 
                         <NavLink
-                            to="/app/transações"
+                            to="/app/transacoes"
                             className={({ isActive }) =>
                                 isActive
                                     ? "header-link active"

@@ -10,7 +10,11 @@ import { authService } from "../../services/authService.js";
 
 const Login = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const {
+        login,
+        loading,
+        isAuthenticated
+    } = useAuth();
 
     const [emailOrUsername, setEmailOrUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -101,6 +105,18 @@ const Login = () => {
             setIsLoading(false);
         }, 1500);
     };
+
+    useEffect(() => {
+
+        if (!loading && isAuthenticated) {
+            navigate("/app/dashboard", { replace: true });
+        }
+
+    }, [loading, isAuthenticated, navigate]);
+
+    if (loading) {
+        return null;
+    }
 
     return (
         <div className="auth-page">
