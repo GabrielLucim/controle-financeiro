@@ -89,6 +89,34 @@
     color: #9ca3af;
 }
 
+.transactions-table {
+    background: var(--color-surface, #222630);
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.transactions-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.transactions-table th {
+    background: #2d3442;
+    color: white;
+    padding: 18px;
+    text-align: left;
+}
+
+.transactions-table td {
+    padding: 18px;
+    color: #d1d5db;
+    border-top: 1px solid #374151;
+}
+
+.transactions-table tr:hover {
+    background: rgba(255, 255, 255, .03);
+}
+
 @media (max-width:768px) {
 
     .transactions-content {
@@ -103,6 +131,14 @@
 
     .transactions-button {
         width: 100%;
+    }
+
+    .transactions-table {
+        overflow-x: auto;
+    }
+        
+    .transactions-table table {
+        min-width: 700px;
     }
 
 }

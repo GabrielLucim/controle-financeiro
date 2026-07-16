@@ -1,6 +1,8 @@
 import React from "react";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
+import { dashboardMock } from "../../mocks/dashboardMock";
+import { transactionMock } from "../../mocks/transactionMock";
 import "./Transactions.css";
 
 function Transactions() {
@@ -35,30 +37,85 @@ function Transactions() {
 
                 <section className="transactions-toolbar">
 
-                    <label htmlFor="wallet">
-                        Carteira
-                    </label>
+                    <div className="transactions-field">
 
-                    <select
-                        id="wallet"
-                        className="transactions-select"
-                    >
-                        <option>
-                            Selecione uma carteira
-                        </option>
-                    </select>
+                        <label htmlFor="wallet">
+                            Carteira
+                        </label>
+
+                        <select
+                            id="wallet"
+                            className="transactions-select"
+                        >
+
+                            <option>
+                                Todas as carteiras
+                            </option>
+
+                            {dashboardMock.map(wallet => (
+
+                                <option
+                                    key={wallet.id}
+                                    value={wallet.id}
+                                >
+                                    {wallet.name}
+                                </option>
+
+                            ))}
+
+                        </select>
+
+                    </div>
 
                 </section>
 
-                <section className="transactions-empty">
+                <section className="transactions-table">
 
-                    <h3>
-                        Nenhuma transação encontrada
-                    </h3>
+                    <table>
 
-                    <p>
-                        Selecione uma carteira ou cadastre uma nova transação.
-                    </p>
+                        <thead>
+
+                            <tr>
+
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Data</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {transactionMock.map(transaction => (
+
+                                <tr key={transaction.id}>
+
+                                    <td>{transaction.description}</td>
+
+                                    <td>{transaction.category}</td>
+
+                                    <td>
+                                        {transaction.type === "income"
+                                            ? "Receita"
+                                            : "Despesa"}
+                                    </td>
+
+                                    <td>
+                                        R$ {transaction.value.toFixed(2)}
+                                    </td>
+
+                                    <td>{transaction.date}</td>
+
+                                </tr>
+
+                            ))}
+
+                        </tbody>
+
+                    </table>
 
                 </section>
 
