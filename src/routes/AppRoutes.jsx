@@ -7,6 +7,7 @@ import { ResetPassword } from "../pages/ResetPassword/ResetPassword.jsx";
 import Dashboard from "../pages/Dashboard/Dashboard.jsx";
 import Profile from "../pages/Profile/Profile.jsx";
 import { ProtectedRoute } from "../components/ProtectedRoute.jsx";
+import Transactions from "../pages/Transactions/Transactions.jsx";
 
 function AppRoutes() {
     return (
@@ -34,6 +35,15 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/app/transacoes"
+                    element={
+                        <ProtectedRoute>
+                            <Transactions />
                         </ProtectedRoute>
                     }
                 />
