@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Global/Header/Header";
@@ -8,6 +8,9 @@ import "./Dashboard.css";
 
 function Dashboard() {
     const { user, logout } = useAuth();
+    const [wallets, setWallets] = useState(dashboardMock);
+    const [showModal, setShowModal] = useState(false);
+
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -34,7 +37,7 @@ function Dashboard() {
                     </div>
                 </div>
                 <section className="wallet-grid">
-                    {dashboardMock.map(wallet => (
+                    {wallets.map(wallet => (
                         <div
                             key={wallet.id}
                             className="wallet-card"
@@ -56,7 +59,7 @@ function Dashboard() {
                             </div>
                         </div>
                     ))}
-                    <div className="wallet-card add">
+                    <div>
                         <span>+ Nova Carteira</span>
                     </div>
                 </section>
