@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./CreateWalletModal.css";
 
 function CreateWalletModal({ open, onClose, onCreate }) {
@@ -7,12 +7,86 @@ function CreateWalletModal({ open, onClose, onCreate }) {
     const [description, setDescription] = useState("");
     const [balance, setBalance] = useState("");
     const [members, setMembers] = useState(1);
-
     const [error, setError] = useState("");
+
+    const modalRef = useRef(null);
+
+    const clearFields = () => {
+        setName("");
+        setDescription("");
+        setBalance("");
+        setMembers(1);
+        setError("");
+    };
+
+    const handleClose = () => {
+        clearFields();
+        onClose();
+    };
+
+    useEffect(() => {
+
+        if (!open) return;
+
+        document.body.style.overflow = "hidden";
+
+        const focusable = modalRef.current.querySelectorAll(
+            "button, input, textarea, select"
+        );
+
+        if (focusable.length > 0) {
+            focusable[0].focus();
+        }
+
+        const handleKeyDown = (e) => {
+
+            if (e.key === "Escape") {
+                handleClose();
+                return;
+            }
+
+            if (e.key !== "Tab") return;
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (e.shiftKey) {
+
+                if (document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                }
+
+            } else {
+
+                if (document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+
+            }
+
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+
+            document.body.style.overflow = "auto";
+
+            document.removeEventListener(
+                "keydown",
+                handleKeyDown
+            );
+
+        };
+
+    }, [open]);
 
     if (!open) return null;
 
     const handleSubmit = (e) => {
+
         e.preventDefault();
 
         if (!name.trim()) {
@@ -32,37 +106,27 @@ function CreateWalletModal({ open, onClose, onCreate }) {
             balance:
                 balance === ""
                     ? 0
-                    : parseFloat(
-                        balance
-                            .toString()
-                            .replace(",", ".")
-                    ),
+                    : parseFloat(balance.toString().replace(",", ".")),
             members: Number(members)
         });
 
-        setName("");
-        setDescription("");
-        setBalance("");
-        setMembers(1);
-        setError("");
-
+        clearFields();
         onClose();
-    };
 
-    const handleClose = () => {
-        setName("");
-        setDescription("");
-        setBalance("");
-        setMembers(1);
-        setError("");
-
-        onClose();
     };
 
     return (
-        <div className="wallet-modal-overlay">
 
-            <div className="wallet-modal">
+        <div
+            className="wallet-modal-overlay"
+            onClick={handleClose}
+        >
+
+            <div
+                className="wallet-modal"
+                ref={modalRef}
+                onClick={(e) => e.stopPropagation()}
+            >
 
                 <h2 className="wallet-modal-title">
                     Nova Carteira
@@ -75,8 +139,9 @@ function CreateWalletModal({ open, onClose, onCreate }) {
                         <label>Nome da Carteira</label>
 
                         <input
+                            className="modal-input"
                             type="text"
-                            placeholder="Ex.: Carteira Principal"
+                            placeholder="Ex: Carteira Principal"
                             value={name}
                             onChange={(e) =>
                                 setName(e.target.value)
@@ -90,6 +155,7 @@ function CreateWalletModal({ open, onClose, onCreate }) {
                         <label>Descrição</label>
 
                         <input
+                            className="modal-input"
                             type="text"
                             placeholder="Descrição da carteira"
                             value={description}
@@ -105,6 +171,7 @@ function CreateWalletModal({ open, onClose, onCreate }) {
                         <label>Saldo Inicial</label>
 
                         <input
+                            className="modal-input"
                             type="number"
                             step="0.01"
                             placeholder="0,00"
@@ -121,6 +188,7 @@ function CreateWalletModal({ open, onClose, onCreate }) {
                         <label>Quantidade de membros</label>
 
                         <input
+                            className="modal-input"
                             type="number"
                             min="1"
                             value={members}
@@ -161,7 +229,9 @@ function CreateWalletModal({ open, onClose, onCreate }) {
             </div>
 
         </div>
+
     );
+
 }
 
 export default CreateWalletModal;
