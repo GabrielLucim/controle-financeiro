@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import { dashboardMock } from "../../mocks/dashboardMock";
+import CreateWalletModal from "../../components/Wallet/CreateWalletModal";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -16,6 +17,18 @@ function Dashboard() {
     const handleLogout = () => {
         logout();
         navigate("/login");
+    };
+
+    const handleCreateWallet = (wallet) => {
+        setWallets((prev) => [
+            ...prev,
+            {
+                id: Date.now(),
+                ...wallet
+            }
+        ]);
+
+        setShowModal(false);
     };
 
     const openWallet = (id) => {
@@ -59,11 +72,19 @@ function Dashboard() {
                             </div>
                         </div>
                     ))}
-                    <div>
+                    <div
+                        className="wallet-card add"
+                        onClick={() => setShowModal(true)}
+                    >
                         <span>+ Nova Carteira</span>
                     </div>
                 </section>
             </main>
+            <CreateWalletModal
+                open={showModal}
+                onClose={() => setShowModal(false)}
+                onCreate={handleCreateWallet}
+            />
             <Footer />
         </div>
     );
