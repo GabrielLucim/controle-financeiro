@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import { dashboardMock } from "../../mocks/dashboardMock";
@@ -6,6 +6,21 @@ import { transactionMock } from "../../mocks/transactionMock";
 import "./Transactions.css";
 
 function Transactions() {
+
+    const [selectedWallet, setSelectedWallet] = useState("all");
+
+    const filteredTransactions = useMemo(() => {
+
+        if (selectedWallet === "all") {
+            return transactionMock;
+        }
+
+        return transactionMock.filter(
+            transaction =>
+                transaction.walletId === Number(selectedWallet)
+        );
+
+    }, [selectedWallet]);
 
     return (
 
@@ -46,9 +61,13 @@ function Transactions() {
                         <select
                             id="wallet"
                             className="transactions-select"
+                            value={selectedWallet}
+                            onChange={(e) =>
+                                setSelectedWallet(e.target.value)
+                            }
                         >
 
-                            <option>
+                            <option value="all">
                                 Todas as carteiras
                             </option>
 
@@ -89,29 +108,46 @@ function Transactions() {
 
                         <tbody>
 
-                            {transactionMock.map(transaction => (
+                            {filteredTransactions.length === 0 ? (
 
-                                <tr key={transaction.id}>
+                                <tr>
 
-                                    <td>{transaction.description}</td>
-
-                                    <td>{transaction.category}</td>
-
-                                    <td>
-                                        {transaction.type === "income"
-                                            ? "Receita"
-                                            : "Despesa"}
+                                    <td
+                                        colSpan="5"
+                                        className="transactions-empty-table"
+                                    >
+                                        Nenhuma transação encontrada.
                                     </td>
-
-                                    <td>
-                                        R$ {transaction.value.toFixed(2)}
-                                    </td>
-
-                                    <td>{transaction.date}</td>
 
                                 </tr>
 
-                            ))}
+                            ) : (
+
+                                filteredTransactions.map(transaction => (
+
+                                    <tr key={transaction.id}>
+
+                                        <td>{transaction.description}</td>
+
+                                        <td>{transaction.category}</td>
+
+                                        <td>
+                                            {transaction.type === "income"
+                                                ? "Receita"
+                                                : "Despesa"}
+                                        </td>
+
+                                        <td>
+                                            R$ {transaction.value.toFixed(2)}
+                                        </td>
+
+                                        <td>{transaction.date}</td>
+
+                                    </tr>
+
+                                ))
+
+                            )}
 
                         </tbody>
 

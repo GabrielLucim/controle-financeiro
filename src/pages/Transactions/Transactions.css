@@ -141,4 +141,11 @@
         min-width: 700px;
     }
 
+    .transactions-empty-table {
+        text-align: center;
+        padding: 40px;
+        color: #9ca3af;
+        font-style: italic;
+    }
+
 }
