@@ -8,6 +8,7 @@ import Dashboard from "../pages/Dashboard/Dashboard.jsx";
 import Profile from "../pages/Profile/Profile.jsx";
 import { ProtectedRoute } from "../components/ProtectedRoute.jsx";
 import Transactions from "../pages/Transactions/Transactions.jsx";
+import Categories from "../pages/Categories/Categories.jsx";
 
 function AppRoutes() {
     return (
@@ -44,6 +45,15 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <Transactions />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/app/categorias"
+                    element={
+                        <ProtectedRoute>
+                            <Categories />
                         </ProtectedRoute>
                     }
                 />
