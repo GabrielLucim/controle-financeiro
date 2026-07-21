@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./CreateTransactionModal.css";
 
 function CreateTransactionModal({
@@ -15,6 +15,19 @@ function CreateTransactionModal({
     const [type, setType] = useState("expense");
     const [value, setValue] = useState("");
     const [error, setError] = useState("");
+
+    const modalRef = useRef(null);
+
+    const resetFields = () => {
+
+        setWalletId("");
+        setDescription("");
+        setCategory("");
+        setType("expense");
+        setValue("");
+        setError("");
+
+    };
 
     useEffect(() => {
 
@@ -36,20 +49,10 @@ function CreateTransactionModal({
 
     }, [editingTransaction, open]);
 
-    const resetFields = () => {
-
-        setWalletId("");
-        setDescription("");
-        setCategory("");
-        setType("expense");
-        setValue("");
-        setError("");
-
-    };
-
     const handleClose = () => {
 
         resetFields();
+
         onClose();
 
     };
@@ -67,14 +70,14 @@ function CreateTransactionModal({
 
         if (!description.trim()) {
 
-            setError("Informe a descrição.");
+            setError("Informe uma descrição.");
             return;
 
         }
 
         if (!category.trim()) {
 
-            setError("Informe a categoria.");
+            setError("Informe uma categoria.");
             return;
 
         }
@@ -114,13 +117,81 @@ function CreateTransactionModal({
 
     };
 
+    useEffect(() => {
+
+        if (!open || !modalRef.current) return;
+
+        const focusable = modalRef.current.querySelectorAll(
+            'button,input,textarea,select,[tabindex]:not([tabindex="-1"])'
+        );
+
+        if (!focusable.length) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        first.focus();
+
+        const handleKeyDown = (event) => {
+
+            if (event.key === "Escape") {
+
+                handleClose();
+                return;
+
+            }
+
+            if (event.key !== "Tab") return;
+
+            if (event.shiftKey) {
+
+                if (document.activeElement === first) {
+
+                    event.preventDefault();
+                    last.focus();
+
+                }
+
+            } else {
+
+                if (document.activeElement === last) {
+
+                    event.preventDefault();
+                    first.focus();
+
+                }
+
+            }
+
+        };
+
+        document.addEventListener(
+            "keydown",
+            handleKeyDown
+        );
+
+        return () =>
+            document.removeEventListener(
+                "keydown",
+                handleKeyDown
+            );
+
+    }, [open]);
+
     if (!open) return null;
 
     return (
 
-        <div className="transaction-modal-overlay">
+        <div
+            className="transaction-modal-overlay"
+            onClick={handleClose}
+        >
 
-            <div className="transaction-modal">
+            <div
+                className="transaction-modal"
+                ref={modalRef}
+                onClick={(e) => e.stopPropagation()}
+            >
 
                 <h2>
 
@@ -134,7 +205,11 @@ function CreateTransactionModal({
 
                     <div className="transaction-group">
 
-                        <label>Carteira</label>
+                        <label>
+
+                            Carteira
+
+                        </label>
 
                         <select
                             value={walletId}
@@ -144,7 +219,9 @@ function CreateTransactionModal({
                         >
 
                             <option value="">
+
                                 Selecione
+
                             </option>
 
                             {wallets.map(wallet => (
@@ -166,7 +243,11 @@ function CreateTransactionModal({
 
                     <div className="transaction-group">
 
-                        <label>Descrição</label>
+                        <label>
+
+                            Descrição
+
+                        </label>
 
                         <input
                             type="text"
@@ -180,7 +261,11 @@ function CreateTransactionModal({
 
                     <div className="transaction-group">
 
-                        <label>Categoria</label>
+                        <label>
+
+                            Categoria
+
+                        </label>
 
                         <input
                             type="text"
@@ -194,7 +279,11 @@ function CreateTransactionModal({
 
                     <div className="transaction-group">
 
-                        <label>Tipo</label>
+                        <label>
+
+                            Tipo
+
+                        </label>
 
                         <select
                             value={type}
@@ -204,11 +293,15 @@ function CreateTransactionModal({
                         >
 
                             <option value="income">
+
                                 Receita
+
                             </option>
 
                             <option value="expense">
+
                                 Despesa
+
                             </option>
 
                         </select>
@@ -217,7 +310,11 @@ function CreateTransactionModal({
 
                     <div className="transaction-group">
 
-                        <label>Valor</label>
+                        <label>
+
+                            Valor
+
+                        </label>
 
                         <input
                             type="number"
