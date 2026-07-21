@@ -1,34 +1,98 @@
-.categories-page {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: var(--dashboard-page-bg, #1a1d24);
+.categories-button {
+
+    border: none;
+    border-radius: 12px;
+    padding: 14px 22px;
+    background: var(--color-primary, #2563eb);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+
 }
 
-.categories-content {
-    flex: 1;
+.categories-button:hover {
+
+    transform: translateY(-2px);
+
+}
+
+.categories-table {
+
+    overflow-x: auto;
+    background: var(--color-surface, #222630);
+    border-radius: 18px;
+    padding: 20px;
+
+}
+
+.categories-table table {
+
     width: 100%;
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 24px;
-    box-sizing: border-box;
+    border-collapse: collapse;
+
 }
 
-.categories-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-}
+.categories-table th {
 
-.categories-title {
-    margin: 0;
-    color: #fff;
-    font-size: 32px;
-    font-weight: 700;
-}
-
-.categories-subtitle {
-    margin-top: 8px;
+    text-align: left;
     color: #9ca3af;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #333;
+
+}
+
+.categories-table td {
+
+    padding: 18px 0;
+    border-bottom: 1px solid #333;
+    color: white;
+
+}
+
+.badge-income {
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(34, 197, 94, .15);
+    color: #22c55e;
+    font-size: 13px;
+    font-weight: 600;
+
+}
+
+.badge-expense {
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(239, 68, 68, .15);
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 600;
+
+}
+
+@media (max-width:768px) {
+
+    .categories-header {
+
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+
+    }
+
+    .categories-button {
+
+        width: 100%;
+
+    }
+
 }
