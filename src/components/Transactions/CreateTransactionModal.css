@@ -1,0 +1,92 @@
+.transaction-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    padding: 20px;
+}
+
+.transaction-modal {
+    width: 100%;
+    max-width: 520px;
+    background: #222630;
+    border-radius: 18px;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+.transaction-modal h2 {
+    color: #fff;
+    margin: 0 0 24px;
+}
+
+.transaction-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.transaction-group label {
+    color: #fff;
+    font-weight: 600;
+}
+
+.transaction-group input,
+.transaction-group select {
+    padding: 13px;
+    border-radius: 10px;
+    border: 1px solid #394150;
+    background: #1f2937;
+    color: #fff;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.transaction-error {
+    color: #ef4444;
+    margin-bottom: 18px;
+}
+
+.transaction-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.transaction-buttons button {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.cancel {
+    background: #4b5563;
+    color: #fff;
+}
+
+.create {
+    background: #2563eb;
+    color: #fff;
+}
+
+@media(max-width:600px) {
+
+    .transaction-modal {
+        padding: 22px;
+    }
+
+    .transaction-buttons {
+        flex-direction: column;
+    }
+
+    .transaction-buttons button {
+        width: 100%;
+    }
+
+}

@@ -1,26 +1,40 @@
 import React, { useMemo, useState } from "react";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
+import CreateTransactionModal from "../../components/Transactions/CreateTransactionModal";
 import { dashboardMock } from "../../mocks/dashboardMock";
 import { transactionMock } from "../../mocks/transactionMock";
 import "./Transactions.css";
 
 function Transactions() {
 
+    const [transactions, setTransactions] = useState(transactionMock);
     const [selectedWallet, setSelectedWallet] = useState("all");
+    const [showModal, setShowModal] = useState(false);
 
     const filteredTransactions = useMemo(() => {
 
         if (selectedWallet === "all") {
-            return transactionMock;
+            return transactions;
         }
 
-        return transactionMock.filter(
+        return transactions.filter(
             transaction =>
                 transaction.walletId === Number(selectedWallet)
         );
 
-    }, [selectedWallet]);
+    }, [transactions, selectedWallet]);
+
+    const handleCreateTransaction = (transaction) => {
+
+        setTransactions(prev => [
+            ...prev,
+            transaction
+        ]);
+
+        setShowModal(false);
+
+    };
 
     return (
 
@@ -44,7 +58,10 @@ function Transactions() {
 
                     </div>
 
-                    <button className="transactions-button">
+                    <button
+                        className="transactions-button"
+                        onClick={() => setShowModal(true)}
+                    >
                         + Nova Transação
                     </button>
 
@@ -127,9 +144,13 @@ function Transactions() {
 
                                     <tr key={transaction.id}>
 
-                                        <td>{transaction.description}</td>
+                                        <td>
+                                            {transaction.description}
+                                        </td>
 
-                                        <td>{transaction.category}</td>
+                                        <td>
+                                            {transaction.category}
+                                        </td>
 
                                         <td>
                                             {transaction.type === "income"
@@ -141,7 +162,9 @@ function Transactions() {
                                             R$ {transaction.value.toFixed(2)}
                                         </td>
 
-                                        <td>{transaction.date}</td>
+                                        <td>
+                                            {transaction.date}
+                                        </td>
 
                                     </tr>
 
@@ -156,6 +179,13 @@ function Transactions() {
                 </section>
 
             </main>
+
+            <CreateTransactionModal
+                open={showModal}
+                onClose={() => setShowModal(false)}
+                onCreate={handleCreateTransaction}
+                wallets={dashboardMock}
+            />
 
             <Footer />
 
