@@ -1,12 +1,22 @@
 import { useState } from "react";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
+import CreateCategoryModal from "../../components/Category/CreateCategoryModal";
 import { categoryMock } from "../../mocks/categoryMock";
 import "./Categories.css";
 
 function Categories() {
 
     const [categories] = useState(categoryMock);
+    const [showModal, setShowModal] = useState(false);
+
+    const handleSaveCategory = (category) => {
+
+        console.log(category);
+
+        setShowModal(false);
+
+    };
 
     return (
 
@@ -30,10 +40,11 @@ function Categories() {
 
                     </div>
 
-                    <button className="categories-button">
-
+                    <button
+                        className="categories-button"
+                        onClick={() => setShowModal(true)}
+                    >
                         + Nova Categoria
-
                     </button>
 
                 </div>
@@ -60,9 +71,7 @@ function Categories() {
                                 <tr key={category.id}>
 
                                     <td>
-
                                         {category.name}
-
                                     </td>
 
                                     <td>
@@ -74,11 +83,9 @@ function Categories() {
                                                     : "badge-expense"
                                             }
                                         >
-
                                             {category.type === "income"
                                                 ? "Receita"
                                                 : "Despesa"}
-
                                         </span>
 
                                     </td>
@@ -94,6 +101,12 @@ function Categories() {
                 </section>
 
             </main>
+
+            <CreateCategoryModal
+                open={showModal}
+                onClose={() => setShowModal(false)}
+                onSave={handleSaveCategory}
+            />
 
             <Footer />
 

@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext.jsx';
 export const ProtectedRoute = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
 
-    // Se ainda estiver checando o localStorage, mostra uma tela de carregamento
     if (loading) {
         return (
             <div className="flex h-screen items-center justify-center bg-gray-50">
@@ -14,7 +13,6 @@ export const ProtectedRoute = ({ children }) => {
         );
     }
 
-    // Se não estiver logado, redireciona à força para a tela de login
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
