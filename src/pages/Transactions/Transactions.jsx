@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import CreateTransactionModal from "../../components/Transactions/CreateTransactionModal";
@@ -9,28 +10,95 @@ import "./Transactions.css";
 function Transactions() {
 
     const [transactions, setTransactions] = useState(transactionMock);
+
     const [selectedWallet, setSelectedWallet] = useState("all");
+
     const [showModal, setShowModal] = useState(false);
+
+    const [editingTransaction, setEditingTransaction] = useState(null);
 
     const filteredTransactions = useMemo(() => {
 
         if (selectedWallet === "all") {
+
             return transactions;
+
         }
 
         return transactions.filter(
+
             transaction =>
                 transaction.walletId === Number(selectedWallet)
+
         );
 
     }, [transactions, selectedWallet]);
 
     const handleCreateTransaction = (transaction) => {
 
-        setTransactions(prev => [
-            ...prev,
-            transaction
-        ]);
+        if (editingTransaction) {
+
+            setTransactions(prev =>
+
+                prev.map(item =>
+
+                    item.id === transaction.id
+                        ? transaction
+                        : item
+
+                )
+
+            );
+
+        } else {
+
+            setTransactions(prev => [
+
+                ...prev,
+
+                transaction
+
+            ]);
+
+        }
+
+        setEditingTransaction(null);
+
+        setShowModal(false);
+
+    };
+
+    const handleEditTransaction = (transaction) => {
+
+        setEditingTransaction(transaction);
+
+        setShowModal(true);
+
+    };
+
+    const handleDeleteTransaction = (id) => {
+
+        if (!window.confirm("Deseja realmente excluir esta transação?")) {
+
+            return;
+
+        }
+
+        setTransactions(prev =>
+
+            prev.filter(
+
+                transaction => transaction.id !== id
+
+            )
+
+        );
+
+    };
+
+    const handleCloseModal = () => {
+
+        setEditingTransaction(null);
 
         setShowModal(false);
 
@@ -49,20 +117,32 @@ function Transactions() {
                     <div>
 
                         <h1 className="transactions-title">
+
                             Transações
+
                         </h1>
 
                         <p className="transactions-subtitle">
+
                             Gerencie as movimentações das suas carteiras.
+
                         </p>
 
                     </div>
 
                     <button
                         className="transactions-button"
-                        onClick={() => setShowModal(true)}
+                        onClick={() => {
+
+                            setEditingTransaction(null);
+
+                            setShowModal(true);
+
+                        }}
                     >
+
                         + Nova Transação
+
                     </button>
 
                 </div>
@@ -72,7 +152,9 @@ function Transactions() {
                     <div className="transactions-field">
 
                         <label htmlFor="wallet">
+
                             Carteira
+
                         </label>
 
                         <select
@@ -85,7 +167,9 @@ function Transactions() {
                         >
 
                             <option value="all">
+
                                 Todas as carteiras
+
                             </option>
 
                             {dashboardMock.map(wallet => (
@@ -94,7 +178,9 @@ function Transactions() {
                                     key={wallet.id}
                                     value={wallet.id}
                                 >
+
                                     {wallet.name}
+
                                 </option>
 
                             ))}
@@ -118,6 +204,7 @@ function Transactions() {
                                 <th>Tipo</th>
                                 <th>Valor</th>
                                 <th>Data</th>
+                                <th>Ações</th>
 
                             </tr>
 
@@ -130,10 +217,12 @@ function Transactions() {
                                 <tr>
 
                                     <td
-                                        colSpan="5"
+                                        colSpan="6"
                                         className="transactions-empty-table"
                                     >
+
                                         Nenhuma transação encontrada.
+
                                     </td>
 
                                 </tr>
@@ -145,25 +234,87 @@ function Transactions() {
                                     <tr key={transaction.id}>
 
                                         <td>
+
                                             {transaction.description}
+
                                         </td>
 
                                         <td>
+
                                             {transaction.category}
+
                                         </td>
 
                                         <td>
+
+                                            <span
+                                                className={
+                                                    transaction.type === "income"
+                                                        ? "badge income"
+                                                        : "badge expense"
+                                                }
+                                            >
+
+                                                {transaction.type === "income"
+                                                    ? "Receita"
+                                                    : "Despesa"}
+
+                                            </span>
+
+                                        </td>
+
+                                        <td
+                                            className={
+                                                transaction.type === "income"
+                                                    ? "value-positive"
+                                                    : "value-negative"
+                                            }
+                                        >
+
                                             {transaction.type === "income"
-                                                ? "Receita"
-                                                : "Despesa"}
-                                        </td>
+                                                ? "+"
+                                                : "-"}
 
-                                        <td>
                                             R$ {transaction.value.toFixed(2)}
+
                                         </td>
 
                                         <td>
+
                                             {transaction.date}
+
+                                        </td>
+
+                                        <td>
+
+                                            <div className="transaction-actions">
+
+                                                <button
+                                                    className="edit-button"
+                                                    onClick={() =>
+                                                        handleEditTransaction(transaction)
+                                                    }
+                                                    title="Editar"
+                                                >
+
+                                                    <FaEdit />
+
+                                                </button>
+
+                                                <button
+                                                    className="delete-button"
+                                                    onClick={() =>
+                                                        handleDeleteTransaction(transaction.id)
+                                                    }
+                                                    title="Excluir"
+                                                >
+
+                                                    <FaTrash />
+
+                                                </button>
+
+                                            </div>
+
                                         </td>
 
                                     </tr>
@@ -181,10 +332,17 @@ function Transactions() {
             </main>
 
             <CreateTransactionModal
+
                 open={showModal}
-                onClose={() => setShowModal(false)}
-                onCreate={handleCreateTransaction}
+
+                onClose={handleCloseModal}
+
+                onSave={handleCreateTransaction}
+
                 wallets={dashboardMock}
+
+                editingTransaction={editingTransaction}
+
             />
 
             <Footer />

@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./CreateTransactionModal.css";
 
 function CreateTransactionModal({
     open,
     onClose,
-    onCreate,
-    wallets
+    onSave,
+    wallets,
+    editingTransaction
 }) {
 
     const [walletId, setWalletId] = useState("");
@@ -15,20 +16,42 @@ function CreateTransactionModal({
     const [value, setValue] = useState("");
     const [error, setError] = useState("");
 
-    if (!open) return null;
+    useEffect(() => {
+
+        if (!open) return;
+
+        if (editingTransaction) {
+
+            setWalletId(editingTransaction.walletId);
+            setDescription(editingTransaction.description);
+            setCategory(editingTransaction.category);
+            setType(editingTransaction.type);
+            setValue(editingTransaction.value);
+
+        } else {
+
+            resetFields();
+
+        }
+
+    }, [editingTransaction, open]);
 
     const resetFields = () => {
+
         setWalletId("");
         setDescription("");
         setCategory("");
         setType("expense");
         setValue("");
         setError("");
+
     };
 
     const handleClose = () => {
+
         resetFields();
         onClose();
+
     };
 
     const handleSubmit = (e) => {
@@ -36,38 +59,62 @@ function CreateTransactionModal({
         e.preventDefault();
 
         if (!walletId) {
+
             setError("Selecione uma carteira.");
             return;
+
         }
 
         if (!description.trim()) {
+
             setError("Informe a descrição.");
             return;
+
         }
 
         if (!category.trim()) {
+
             setError("Informe a categoria.");
             return;
+
         }
 
         if (!value || Number(value) <= 0) {
+
             setError("Informe um valor válido.");
             return;
+
         }
 
-        onCreate({
-            id: Date.now(),
+        onSave({
+
+            id: editingTransaction
+                ? editingTransaction.id
+                : Date.now(),
+
             walletId: Number(walletId),
+
             description,
+
             category,
+
             type,
+
             value: Number(value),
-            date: new Date().toLocaleDateString("pt-BR")
+
+            date: editingTransaction
+                ? editingTransaction.date
+                : new Date().toLocaleDateString("pt-BR")
+
         });
 
         resetFields();
+
         onClose();
+
     };
+
+    if (!open) return null;
 
     return (
 
@@ -75,7 +122,13 @@ function CreateTransactionModal({
 
             <div className="transaction-modal">
 
-                <h2>Nova Transação</h2>
+                <h2>
+
+                    {editingTransaction
+                        ? "Editar Transação"
+                        : "Nova Transação"}
+
+                </h2>
 
                 <form onSubmit={handleSubmit}>
 
@@ -85,7 +138,9 @@ function CreateTransactionModal({
 
                         <select
                             value={walletId}
-                            onChange={(e) => setWalletId(e.target.value)}
+                            onChange={(e) =>
+                                setWalletId(e.target.value)
+                            }
                         >
 
                             <option value="">
@@ -98,7 +153,9 @@ function CreateTransactionModal({
                                     key={wallet.id}
                                     value={wallet.id}
                                 >
+
                                     {wallet.name}
+
                                 </option>
 
                             ))}
@@ -145,6 +202,7 @@ function CreateTransactionModal({
                                 setType(e.target.value)
                             }
                         >
+
                             <option value="income">
                                 Receita
                             </option>
@@ -173,9 +231,13 @@ function CreateTransactionModal({
                     </div>
 
                     {error && (
+
                         <p className="transaction-error">
+
                             {error}
+
                         </p>
+
                     )}
 
                     <div className="transaction-buttons">
@@ -185,14 +247,20 @@ function CreateTransactionModal({
                             className="cancel"
                             onClick={handleClose}
                         >
+
                             Cancelar
+
                         </button>
 
                         <button
                             type="submit"
                             className="create"
                         >
-                            Criar
+
+                            {editingTransaction
+                                ? "Salvar Alterações"
+                                : "Criar"}
+
                         </button>
 
                     </div>

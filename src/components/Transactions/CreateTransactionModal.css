@@ -6,87 +6,194 @@
     justify-content: center;
     align-items: center;
     z-index: 999;
-    padding: 20px;
+    padding: 24px;
+    backdrop-filter: blur(4px);
 }
 
 .transaction-modal {
     width: 100%;
     max-width: 520px;
-    background: #222630;
-    border-radius: 18px;
-    padding: 30px;
+    background: var(--color-surface, #222630);
+    border-radius: 20px;
+    padding: 32px;
     box-sizing: border-box;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .35);
+    animation: modalFade .18s ease;
+}
+
+@keyframes modalFade {
+
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
 }
 
 .transaction-modal h2 {
+    margin: 0 0 28px;
     color: #fff;
-    margin: 0 0 24px;
+    font-size: 28px;
+    font-weight: 700;
 }
 
 .transaction-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 18px;
+    margin-bottom: 22px;
 }
 
 .transaction-group label {
     color: #fff;
+    font-size: 14px;
     font-weight: 600;
 }
 
 .transaction-group input,
 .transaction-group select {
-    padding: 13px;
-    border-radius: 10px;
-    border: 1px solid #394150;
+
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #3b4252;
     background: #1f2937;
     color: #fff;
     font-size: 15px;
+    outline: none;
+    transition: .2s;
     box-sizing: border-box;
+
+}
+
+.transaction-group input:focus,
+.transaction-group select:focus {
+
+    border-color: var(--color-primary, #2563eb);
+
+}
+
+.transaction-group select {
+
+    cursor: pointer;
+
+}
+
+.transaction-group input[type="number"]::-webkit-inner-spin-button,
+.transaction-group input[type="number"]::-webkit-outer-spin-button {
+
+    -webkit-appearance: none;
+    margin: 0;
+
+}
+
+.transaction-group input[type="number"] {
+
+    appearance: textfield;
+    -moz-appearance: textfield;
+
 }
 
 .transaction-error {
-    color: #ef4444;
+
+    margin-top: -6px;
     margin-bottom: 18px;
+    color: #ef4444;
+    font-size: 14px;
+    font-weight: 500;
+
 }
 
 .transaction-buttons {
+
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
+    gap: 14px;
+    margin-top: 10px;
+
 }
 
 .transaction-buttons button {
-    padding: 12px 22px;
+
+    min-width: 150px;
+    padding: 14px 22px;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
+    font-size: 15px;
     font-weight: 600;
+    transition: .2s;
+
+}
+
+.transaction-buttons button:hover {
+
+    transform: translateY(-2px);
+
 }
 
 .cancel {
+
     background: #4b5563;
     color: #fff;
+
+}
+
+.cancel:hover {
+
+    background: #5f6978;
+
 }
 
 .create {
-    background: #2563eb;
+
+    background: var(--color-primary, #2563eb);
     color: #fff;
+
 }
 
-@media(max-width:600px) {
+.create:hover {
+
+    background: #1d4ed8;
+
+}
+
+@media (max-width: 640px) {
+
+    .transaction-modal-overlay {
+
+        padding: 16px;
+
+    }
 
     .transaction-modal {
-        padding: 22px;
+
+        padding: 24px;
+
+    }
+
+    .transaction-modal h2 {
+
+        font-size: 24px;
+
     }
 
     .transaction-buttons {
+
         flex-direction: column;
+
     }
 
     .transaction-buttons button {
+
         width: 100%;
+        min-width: unset;
+
     }
 
 }
