@@ -51,7 +51,7 @@ function CreateCategoryModal({
 
             if (e.key === "Escape") {
 
-                onClose();
+                handleClose();
                 return;
 
             }
@@ -91,9 +91,19 @@ function CreateCategoryModal({
                 handleKeyDown
             );
 
-    }, [open, onClose]);
+    }, [open]);
 
     if (!open) return null;
+
+    const handleClose = () => {
+
+        setName("");
+        setType("expense");
+        setError("");
+
+        onClose();
+
+    };
 
     const handleSubmit = (e) => {
 
@@ -117,7 +127,7 @@ function CreateCategoryModal({
 
         });
 
-        onClose();
+        handleClose();
 
     };
 
@@ -125,7 +135,7 @@ function CreateCategoryModal({
 
         <div
             className="category-modal-overlay"
-            onClick={onClose}
+            onClick={handleClose}
         >
 
             <div
@@ -147,12 +157,12 @@ function CreateCategoryModal({
                     <div className="category-group">
 
                         <label>
-
                             Nome
-
                         </label>
 
                         <input
+                            type="text"
+                            placeholder="Ex: Alimentação"
                             value={name}
                             onChange={(e) =>
                                 setName(e.target.value)
@@ -164,9 +174,7 @@ function CreateCategoryModal({
                     <div className="category-group">
 
                         <label>
-
                             Tipo
-
                         </label>
 
                         <select
@@ -177,15 +185,11 @@ function CreateCategoryModal({
                         >
 
                             <option value="income">
-
                                 Receita
-
                             </option>
 
                             <option value="expense">
-
                                 Despesa
-
                             </option>
 
                         </select>
@@ -195,9 +199,7 @@ function CreateCategoryModal({
                     {error && (
 
                         <p className="category-error">
-
                             {error}
-
                         </p>
 
                     )}
@@ -207,7 +209,7 @@ function CreateCategoryModal({
                         <button
                             type="button"
                             className="cancel"
-                            onClick={onClose}
+                            onClick={handleClose}
                         >
 
                             Cancelar
@@ -220,8 +222,8 @@ function CreateCategoryModal({
                         >
 
                             {editingCategory
-                                ? "Salvar"
-                                : "Criar"}
+                                ? "Salvar Alterações"
+                                : "Criar Categoria"}
 
                         </button>
 
