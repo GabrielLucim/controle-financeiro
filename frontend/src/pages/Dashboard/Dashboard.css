@@ -1,0 +1,161 @@
+.dashboard-page {
+    min-height: 100vh;
+    background: #1a1d24;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-content {
+    flex: 1;
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.dashboard-title {
+    font-size: 32px;
+    color: #fff;
+}
+
+.dashboard-subtitle {
+    color: #9ca3af;
+}
+
+.dashboard-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 36px;
+}
+
+.summary-card {
+    background: #222630;
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+}
+
+.summary-label {
+    display: block;
+    color: #9ca3af;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.summary-value {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.summary-value.positive {
+    color: #22c55e;
+}
+
+.summary-value.negative {
+    color: #ef4444;
+}
+
+.dashboard-button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.dashboard-button.danger {
+    background: #ef4444;
+    color: white;
+}
+
+.wallet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.wallet-card {
+    background: #222630;
+    padding: 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.wallet-card:hover {
+    transform: translateY(-3px);
+}
+
+.wallet-card h3 {
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.wallet-card p {
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.wallet-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.wallet-balance {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.wallet-members {
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+.wallet-card.add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    border: 2px dashed #3b3f4b;
+}
+
+.positive {
+    color: #22c55e;
+}
+
+.negative {
+    color: #ef4444;
+}
+
+@media (max-width: 768px) {
+
+    .dashboard-content {
+        padding: 0 16px;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .dashboard-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .wallet-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
