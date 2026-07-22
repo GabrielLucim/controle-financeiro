@@ -172,7 +172,7 @@ function Transactions() {
 
                             </option>
 
-                            {dashboardMock.map(wallet => (
+                            {dashboardMock.wallets.map(wallet => (
 
                                 <option
                                     key={wallet.id}
@@ -332,17 +332,11 @@ function Transactions() {
             </main>
 
             <CreateTransactionModal
-
                 open={showModal}
-
                 onClose={handleCloseModal}
-
                 onSave={handleCreateTransaction}
-
-                wallets={dashboardMock}
-
+                wallets={dashboardMock.wallets}
                 editingTransaction={editingTransaction}
-
             />
 
             <Footer />
