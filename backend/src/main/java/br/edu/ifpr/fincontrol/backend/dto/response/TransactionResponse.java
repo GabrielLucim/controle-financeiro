@@ -34,4 +34,6 @@ public class TransactionResponse {
 
     private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
+
 }

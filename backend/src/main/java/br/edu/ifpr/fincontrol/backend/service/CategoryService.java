@@ -83,6 +83,8 @@ public class CategoryService {
                 .id(category.getId())
                 .name(category.getName())
                 .type(category.getType())
+                .createdAt(category.getCreatedAt())
+                .updatedAt(category.getUpdatedAt())
                 .build();
 
     }

@@ -24,4 +24,6 @@ public class WalletResponse {
 
     private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
+
 }
