@@ -24,13 +24,13 @@ public class TransactionResponse {
 
     private TransactionType type;
 
-    private Long walletId;
-
-    private String walletName;
-
     private Long categoryId;
 
     private String categoryName;
+
+    private Long walletId;
+
+    private String walletName;
 
     private LocalDateTime createdAt;
 
