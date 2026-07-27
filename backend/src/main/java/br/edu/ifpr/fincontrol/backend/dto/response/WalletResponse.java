@@ -18,9 +18,11 @@ public class WalletResponse {
 
     private String description;
 
-    private Integer members;
-
     private BigDecimal balance;
+
+    private Long ownerId;
+
+    private String ownerName;
 
     private LocalDateTime createdAt;
 

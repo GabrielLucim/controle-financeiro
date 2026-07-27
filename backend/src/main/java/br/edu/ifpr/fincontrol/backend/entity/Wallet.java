@@ -25,9 +25,6 @@ public class Wallet {
     @Column(length = 255)
     private String description;
 
-    @Column(nullable = false)
-    private Integer members;
-
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
@@ -44,6 +41,7 @@ public class Wallet {
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
