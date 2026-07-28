@@ -1,6 +1,5 @@
 package br.edu.ifpr.fincontrol.backend.dto.response;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import lombok.*;
@@ -17,8 +16,6 @@ public class WalletResponse {
     private String name;
 
     private String description;
-
-    private BigDecimal balance;
 
     private Long ownerId;
 
