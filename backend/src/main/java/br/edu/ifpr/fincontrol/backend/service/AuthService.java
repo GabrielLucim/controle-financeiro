@@ -39,6 +39,24 @@ public class AuthService {
 
     }
 
+    public LoginResponse login(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("E-mail ou senha inválidos."));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BusinessException("E-mail ou senha inválidos.");
+        }
+
+        String token = jwtService.generateToken(user);
+
+        return LoginResponse.builder()
+                .accessToken(token)
+                .user(toResponse(user))
+                .build();
+
+    }
+
     private UserResponse toResponse(User user) {
 
         return UserResponse.builder()
