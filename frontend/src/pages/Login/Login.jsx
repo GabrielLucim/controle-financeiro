@@ -61,7 +61,7 @@ const Login = () => {
         setShowPassword(!showPassword);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (isLoading) return;
 
@@ -82,28 +82,50 @@ const Login = () => {
         setLoginError("");
         setIsLoading(true);
 
-        setTimeout(() => {
-            const existingUsers = authService.getUsers();
+        try {
 
-            // Procura se o e-mail/usuário e a senha batem com alguém cadastrado
-            const userFound = existingUsers.find(
-                u => u.email === emailOrUsername && u.password === password
+            const response = await authService.login(
+                emailOrUsername,
+                password
             );
 
-            if (userFound) {
-                if (rememberMe) {
-                    localStorage.setItem("@FinControl:rememberMe", JSON.stringify({ emailOrUsername, password }));
-                } else {
-                    localStorage.removeItem("@FinControl:rememberMe");
-                }
+            if (rememberMe) {
 
-                login(userFound, "token-ficticio-123456");
-                navigate("/app/dashboard", { replace: true });
+                localStorage.setItem(
+                    "@FinControl:rememberMe",
+                    JSON.stringify({
+                        emailOrUsername,
+                        password
+                    })
+                );
+
             } else {
-                setLoginError("E-mail/Nome de Usuário ou senha incorretos.");
+
+                localStorage.removeItem("@FinControl:rememberMe");
+
             }
+
+            login(
+                response.user,
+                response.accessToken
+            );
+
+            navigate("/app/dashboard", {
+                replace: true
+            });
+
+        } catch (error) {
+
+            setLoginError(
+                error.response?.data?.message ||
+                "E-mail ou senha incorretos."
+            );
+
+        } finally {
+
             setIsLoading(false);
-        }, 1500);
+
+        }
     };
 
     useEffect(() => {
