@@ -73,8 +73,8 @@ const Login = () => {
             return;
         }
 
-        if (!password || password.length < 6) {
-            setLoginError("A senha deve conter no mínimo 6 caracteres.");
+        if (!password || password.length < 8) {
+            setLoginError("A senha deve conter no mínimo 8 caracteres.");
             return;
         }
 

@@ -15,7 +15,7 @@ public class ResetPasswordRequest {
     private String token;
 
     @NotBlank(message = "A nova senha é obrigatória.")
-    @Size(min = 8, max = 100)
+    @Size(min = 8, max = 50)
     private String newPassword;
 
 }

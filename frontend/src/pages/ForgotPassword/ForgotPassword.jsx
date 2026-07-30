@@ -27,7 +27,6 @@ export const ForgotPassword = () => {
         setError("");
         setIsLoading(true);
 
-        // Simulação do serviço (Mock) com delay de 1.5s
         setTimeout(() => {
             setIsLoading(false);
             setSuccessMessage("Se o e-mail informado estiver cadastrado, um link de recuperação foi enviado.");

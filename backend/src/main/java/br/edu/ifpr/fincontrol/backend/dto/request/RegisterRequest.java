@@ -21,7 +21,7 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "A senha é obrigatória.")
-    @Size(min = 8, max = 100)
+    @Size(min = 8, max = 50, message = "A senha deve possuir entre 8 e 50 caracteres.")
     private String password;
 
 }

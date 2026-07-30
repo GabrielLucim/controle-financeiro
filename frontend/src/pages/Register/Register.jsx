@@ -63,8 +63,8 @@ const Register = () => {
             return;
         }
 
-        if (password.length < 6) {
-            setError("A senha deve conter no mínimo 6 caracteres.");
+        if (password.length < 8) {
+            setError("A senha deve conter no mínimo 8 caracteres.");
             return;
         }
 
@@ -77,22 +77,29 @@ const Register = () => {
         setConfirmPasswordError("");
         setIsLoading(true);
 
-        setTimeout(async () => {
-            try {
-                await authService.register(name, email, password);
+        try {
 
-                setIsLoading(false);
-                setSuccessMessage("Cadastro realizado com sucesso! Redirecionando...");
+            await authService.register(name, email, password);
 
-                setTimeout(() => {
-                    navigate("/login");
-                }, 2000);
+            setSuccessMessage("Cadastro realizado com sucesso! Redirecionando...");
 
-            } catch (err) {
-                setError(err.message);
-                setIsLoading(false);
-            }
-        }, 1500);
+            setTimeout(() => {
+                navigate("/login");
+            }, 2000);
+
+        } catch (err) {
+
+            setError(
+                err.response?.data?.message ||
+                err.message ||
+                "Erro ao cadastrar usuário."
+            );
+
+        } finally {
+
+            setIsLoading(false);
+
+        }
     };
 
     return (
@@ -143,7 +150,7 @@ const Register = () => {
                                         type={showPassword ? "text" : "password"}
                                         id="password"
                                         className="form-input"
-                                        placeholder="No mínimo 6 caracteres"
+                                        placeholder="No mínimo 8 caracteres"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                     />
