@@ -19,26 +19,19 @@ function Dashboard() {
     });
 
     const [wallets, setWallets] = useState([]);
-
     const [showModal, setShowModal] = useState(false);
-
     const navigate = useNavigate();
-
+    
     const handleLogout = () => {
-
         logout();
         navigate("/login");
-
     };
 
     useEffect(() => {
 
         const loadDashboard = async () => {
-
             try {
-
                 const data = await dashboardService.getDashboard();
-
                 setSummary({
                     balance: data.balance,
                     income: data.income,
@@ -48,38 +41,26 @@ function Dashboard() {
                 setWallets(data.wallets);
 
             } catch (error) {
-
                 console.error(error);
-
             }
-
         };
-
         loadDashboard();
 
     }, []);
 
     const handleCreateWallet = (wallet) => {
-
         setWallets(prev => [
-
             ...prev,
-
             {
                 id: Date.now(),
                 ...wallet
             }
-
         ]);
-
         setShowModal(false);
-
     };
 
     const openWallet = (id) => {
-
         navigate(`/app/wallets/${id}`);
-
     };
 
     return (
