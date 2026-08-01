@@ -34,10 +34,13 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/actuator/health")
                         .permitAll()
+
                         .anyRequest()
                         .authenticated())
 
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(
+                        jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
 

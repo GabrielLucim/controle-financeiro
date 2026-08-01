@@ -84,7 +84,11 @@ const Register = () => {
             setSuccessMessage("Cadastro realizado com sucesso! Redirecionando...");
 
             setTimeout(() => {
-                navigate("/login");
+                navigate("/login", {
+                    state: {
+                        email
+                    }
+                });
             }, 2000);
 
         } catch (err) {

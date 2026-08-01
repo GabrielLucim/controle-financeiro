@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext.jsx";
 import Header from "../../components/Global/Header/Header.jsx";
@@ -10,13 +10,17 @@ import { authService } from "../../services/authService.js";
 
 const Login = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const {
         login,
         loading,
         isAuthenticated
     } = useAuth();
 
-    const [emailOrUsername, setEmailOrUsername] = useState("");
+    const [emailOrUsername, setEmailOrUsername] = useState(
+        location.state?.email || ""
+    );
+
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
