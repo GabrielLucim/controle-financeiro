@@ -2,11 +2,14 @@ package br.edu.ifpr.fincontrol.backend.service;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import br.edu.ifpr.fincontrol.backend.dto.request.ChangePasswordRequest;
 import br.edu.ifpr.fincontrol.backend.dto.request.UserRequest;
 import br.edu.ifpr.fincontrol.backend.dto.response.UserResponse;
 import br.edu.ifpr.fincontrol.backend.entity.User;
+import br.edu.ifpr.fincontrol.backend.exception.BusinessException;
 import br.edu.ifpr.fincontrol.backend.exception.ResourceNotFoundException;
 import br.edu.ifpr.fincontrol.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponse create(UserRequest request) {
 
@@ -52,7 +56,7 @@ public class UserService {
 
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         user = repository.save(user);
 
@@ -69,12 +73,27 @@ public class UserService {
 
     }
 
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BusinessException("A senha atual está incorreta.");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        repository.save(user);
+
+    }
+
     private User toEntity(UserRequest request) {
 
         return User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .build();
 
     }

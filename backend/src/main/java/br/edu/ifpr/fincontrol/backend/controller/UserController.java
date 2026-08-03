@@ -4,11 +4,14 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import br.edu.ifpr.fincontrol.backend.dto.request.ChangePasswordRequest;
 import br.edu.ifpr.fincontrol.backend.dto.request.UserRequest;
 import br.edu.ifpr.fincontrol.backend.dto.response.UserResponse;
+import br.edu.ifpr.fincontrol.backend.security.UserDetailsImpl;
 import br.edu.ifpr.fincontrol.backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +65,17 @@ public class UserController {
         service.delete(id);
 
         return ResponseEntity.noContent().build();
+
+    }
+
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        service.changePassword(userDetails.getUser().getId(), request);
+
+        return ResponseEntity.ok().build();
 
     }
 

@@ -20,6 +20,7 @@ function Profile() {
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
     const getPasswordStrength = (pass) => {
 
         if (!pass)
@@ -106,10 +107,10 @@ function Profile() {
 
         }
 
-        if (newPassword.length < 6) {
+        if (newPassword.length < 8) {
 
             setError(
-                "A nova senha deve possuir no mínimo 6 caracteres."
+                "A nova senha deve possuir no mínimo 8 caracteres."
             );
 
             return;
@@ -128,12 +129,12 @@ function Profile() {
 
         setError("");
         setConfirmPasswordError("");
+        setSuccessMessage("");
         setIsLoading(true);
 
         try {
 
             await authService.changePassword(
-                user.email,
                 currentPassword,
                 newPassword
             );
@@ -148,7 +149,11 @@ function Profile() {
 
         } catch (err) {
 
-            setError(err.message);
+            setError(
+                err.response?.data?.message ||
+                err.message ||
+                "Erro ao alterar a senha."
+            );
 
         } finally {
 
