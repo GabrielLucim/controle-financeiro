@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/transactions")
 @RequiredArgsConstructor
 @Validated
-@CrossOrigin
 public class TransactionController {
 
     private final TransactionService service;

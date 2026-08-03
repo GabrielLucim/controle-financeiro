@@ -19,6 +19,8 @@ public class DashboardController {
     @GetMapping
     public ResponseEntity<DashboardResponse> getDashboard() {
 
+        System.out.println("CHEGOU NO DASHBOARD");
+
         return ResponseEntity.ok(
                 dashboardService.getDashboard());
 
