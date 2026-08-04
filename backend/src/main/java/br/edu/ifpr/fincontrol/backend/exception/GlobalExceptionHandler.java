@@ -97,4 +97,17 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+
+            ErrorResponse error = ErrorResponse.builder()
+                            .timestamp(LocalDateTime.now())
+                            .status(HttpStatus.UNAUTHORIZED.value())
+                            .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                            .message("E-mail ou senha inválidos.")
+                            .build();
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
 }
