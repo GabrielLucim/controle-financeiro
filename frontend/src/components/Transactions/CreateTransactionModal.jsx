@@ -36,7 +36,7 @@ function CreateTransactionModal({
             setWalletId(editingTransaction.walletId || "");
             setCategoryId(editingTransaction.categoryId || "");
             setDescription(editingTransaction.description || "");
-            setType(editingTransaction.type || "EXPENSE");
+            setType(editingTransaction.type?.toUpperCase() || "EXPENSE");
             setValue(editingTransaction.amount || editingTransaction.value || "");
             setDate(editingTransaction.date || new Date().toISOString().split("T")[0]);
         } else {
@@ -84,6 +84,56 @@ function CreateTransactionModal({
         resetFields();
     };
 
+    useEffect(() => {
+        if (!open || !modalRef.current) return;
+
+        const getFocusableElements = () => {
+            return modalRef.current.querySelectorAll(
+                'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+        };
+
+        const focusableElements = getFocusableElements();
+        if (focusableElements.length > 0) {
+            setTimeout(() => {
+                focusableElements[0].focus();
+            }, 50);
+        }
+
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+                handleClose();
+                return;
+            }
+
+            if (e.key === "Tab") {
+                const currentFocusable = getFocusableElements();
+                if (currentFocusable.length === 0) return;
+
+                const first = currentFocusable[0];
+                const last = currentFocusable[currentFocusable.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [open]);
+
     if (!open) return null;
 
     return (
@@ -103,8 +153,10 @@ function CreateTransactionModal({
                             onChange={(e) => setWalletId(e.target.value)}
                         >
                             <option value="">Selecione uma carteira</option>
-                            {wallets.map(w => (
-                                <option key={w.id} value={w.id}>{w.name}</option>
+                            {wallets.map((w) => (
+                                <option key={w.id} value={w.id}>
+                                    {w.name}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -126,8 +178,10 @@ function CreateTransactionModal({
                             onChange={(e) => setCategoryId(e.target.value)}
                         >
                             <option value="">Selecione uma categoria</option>
-                            {categories.map(c => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
+                            {categories.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name}
+                                </option>
                             ))}
                         </select>
                     </div>

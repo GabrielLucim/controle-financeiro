@@ -27,6 +27,10 @@ public class Category {
     @Column(nullable = false)
     private CategoryType type;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User owner;
+
     @OneToMany(mappedBy = "category")
     private List<Transaction> transactions;
 
@@ -46,5 +50,4 @@ public class Category {
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 }

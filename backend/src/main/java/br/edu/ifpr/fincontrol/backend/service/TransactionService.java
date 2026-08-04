@@ -19,100 +19,128 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TransactionService {
 
-    private final TransactionRepository repository;
-    private final WalletRepository walletRepository;
-    private final CategoryRepository categoryRepository;
+        private final TransactionRepository repository;
+        private final WalletRepository walletRepository;
+        private final CategoryRepository categoryRepository;
 
-    public TransactionResponse create(TransactionRequest request) {
+        public TransactionResponse create(TransactionRequest request, Long userId) {
 
-        Wallet wallet = walletRepository.findById(request.getWalletId())
-                .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
+                Wallet wallet = walletRepository.findById(request.getWalletId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
 
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
+                if (!wallet.getOwner().getId().equals(userId)) {
+                        throw new ResourceNotFoundException("Carteira não encontrada.");
+                }
 
-        Transaction transaction = Transaction.builder()
-                .description(request.getDescription())
-                .amount(request.getAmount())
-                .date(request.getDate())
-                .type(request.getType())
-                .wallet(wallet)
-                .category(category)
-                .build();
+                Category category = categoryRepository.findById(request.getCategoryId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
 
-        repository.save(transaction);
+                if (!category.getOwner().getId().equals(userId)) {
+                        throw new ResourceNotFoundException("Categoria não encontrada.");
+                }
 
-        return toResponse(transaction);
+                Transaction transaction = Transaction.builder()
+                                .description(request.getDescription())
+                                .amount(request.getAmount())
+                                .date(request.getDate())
+                                .type(request.getType())
+                                .wallet(wallet)
+                                .category(category)
+                                .build();
 
-    }
+                repository.save(transaction);
 
-    public List<TransactionResponse> findAll() {
+                return toResponse(transaction);
 
-        return repository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        }
 
-    }
+        public List<TransactionResponse> findAllByUserId(Long userId) {
 
-    public TransactionResponse findById(Long id) {
+                return repository.findByWalletOwnerId(userId)
+                                .stream()
+                                .map(this::toResponse)
+                                .toList();
 
-        Transaction transaction = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
+        }
 
-        return toResponse(transaction);
+        public TransactionResponse findById(Long id, Long userId) {
 
-    }
+                Transaction transaction = repository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
 
-    public TransactionResponse update(Long id, TransactionRequest request) {
+                if (!transaction.getWallet().getOwner().getId().equals(userId)) {
+                        throw new ResourceNotFoundException("Transação não encontrada.");
+                }
 
-        Transaction transaction = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
+                return toResponse(transaction);
 
-        Wallet wallet = walletRepository.findById(request.getWalletId())
-                .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
+        }
 
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
+        public TransactionResponse update(Long id, TransactionRequest request, Long userId) {
 
-        transaction.setDescription(request.getDescription());
-        transaction.setAmount(request.getAmount());
-        transaction.setDate(request.getDate());
-        transaction.setType(request.getType());
-        transaction.setWallet(wallet);
-        transaction.setCategory(category);
+                Transaction transaction = repository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
 
-        repository.save(transaction);
+                if (!transaction.getWallet().getOwner().getId().equals(userId)) {
+                        throw new ResourceNotFoundException("Transação não encontrada.");
+                }
 
-        return toResponse(transaction);
+                Wallet wallet = walletRepository.findById(request.getWalletId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
 
-    }
+                if (!wallet.getOwner().getId().equals(userId)) {
+                        throw new ResourceNotFoundException("Carteira não encontrada.");
+                }
 
-    public void delete(Long id) {
+                Category category = categoryRepository.findById(request.getCategoryId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
 
-        Transaction transaction = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
+                if (!category.getOwner().getId().equals(userId)) {
+                        throw new ResourceNotFoundException("Categoria não encontrada.");
+                }
 
-        repository.delete(transaction);
+                transaction.setDescription(request.getDescription());
+                transaction.setAmount(request.getAmount());
+                transaction.setDate(request.getDate());
+                transaction.setType(request.getType());
+                transaction.setWallet(wallet);
+                transaction.setCategory(category);
 
-    }
+                repository.save(transaction);
 
-    private TransactionResponse toResponse(Transaction transaction) {
+                return toResponse(transaction);
 
-        return TransactionResponse.builder()
-                .id(transaction.getId())
-                .description(transaction.getDescription())
-                .amount(transaction.getAmount())
-                .date(transaction.getDate())
-                .type(transaction.getType())
-                .walletId(transaction.getWallet().getId())
-                .walletName(transaction.getWallet().getName())
-                .categoryId(transaction.getCategory().getId())
-                .categoryName(transaction.getCategory().getName())
-                .createdAt(transaction.getCreatedAt())
-                .updatedAt(transaction.getUpdatedAt())
-                .build();
+        }
 
-    }
+        public void delete(Long id, Long userId) {
+
+                Transaction transaction = repository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
+
+                if (!transaction.getWallet().getOwner().getId().equals(userId)) {
+                        throw new ResourceNotFoundException("Transação não encontrada.");
+                }
+
+                repository.delete(transaction);
+
+        }
+
+        private TransactionResponse toResponse(Transaction transaction) {
+
+                return TransactionResponse.builder()
+                                .id(transaction.getId())
+                                .description(transaction.getDescription())
+                                .amount(transaction.getAmount())
+                                .date(transaction.getDate())
+                                .type(transaction.getType())
+                                .walletId(transaction.getWallet().getId())
+                                .walletName(transaction.getWallet().getName())
+                                .categoryId(transaction.getCategory().getId())
+                                .categoryName(transaction.getCategory().getName())
+                                .createdAt(transaction.getCreatedAt())
+                                .updatedAt(transaction.getUpdatedAt())
+                                .build();
+
+        }
 
 }

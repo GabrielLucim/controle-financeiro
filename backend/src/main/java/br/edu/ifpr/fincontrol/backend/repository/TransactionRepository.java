@@ -10,4 +10,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findByWalletId(Long walletId);
 
+    List<Transaction> findByWalletOwnerId(Long ownerId);
+
 }
