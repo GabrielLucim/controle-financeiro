@@ -1,6 +1,7 @@
 package br.edu.ifpr.fincontrol.backend.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -17,12 +18,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WalletService {
 
-    private final WalletRepository repository;
+    private final WalletRepository walletRepository;
     private final UserRepository userRepository;
 
-    public WalletResponse create(WalletRequest request) {
-
-        User owner = userRepository.findById(request.getOwnerId())
+    public WalletResponse create(WalletRequest request, Long userId) {
+        User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 
         Wallet wallet = Wallet.builder()
@@ -31,65 +31,61 @@ public class WalletService {
                 .owner(owner)
                 .build();
 
-        repository.save(wallet);
+        walletRepository.save(wallet);
 
         return toResponse(wallet);
-
     }
 
-    public List<WalletResponse> findAll() {
-
-        return repository.findAll()
-                .stream()
+    public List<WalletResponse> findAllByUserId(Long userId) {
+        List<Wallet> wallets = walletRepository.findByOwnerId(userId);
+        return wallets.stream()
                 .map(this::toResponse)
-                .toList();
-
+                .collect(Collectors.toList());
     }
 
-    public WalletResponse findById(Long id) {
-
-        Wallet wallet = repository.findById(id)
+    public WalletResponse findById(Long id, Long userId) {
+        Wallet wallet = walletRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
+
+        if (!wallet.getOwner().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Carteira não encontrada.");
+        }
 
         return toResponse(wallet);
-
     }
 
-    public WalletResponse update(Long id, WalletRequest request) {
-
-        Wallet wallet = repository.findById(id)
+    public WalletResponse update(Long id, WalletRequest request, Long userId) {
+        Wallet wallet = walletRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
+
+        if (!wallet.getOwner().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Carteira não encontrada.");
+        }
 
         wallet.setName(request.getName());
         wallet.setDescription(request.getDescription());
 
-        repository.save(wallet);
+        walletRepository.save(wallet);
 
         return toResponse(wallet);
-
     }
 
-    public void delete(Long id) {
-
-        Wallet wallet = repository.findById(id)
+    public void delete(Long id, Long userId) {
+        Wallet wallet = walletRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
 
-        repository.delete(wallet);
+        if (!wallet.getOwner().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Carteira não encontrada.");
+        }
 
+        walletRepository.delete(wallet);
     }
 
     private WalletResponse toResponse(Wallet wallet) {
-
         return WalletResponse.builder()
                 .id(wallet.getId())
                 .name(wallet.getName())
                 .description(wallet.getDescription())
-                .ownerId(wallet.getOwner().getId())
-                .ownerName(wallet.getOwner().getName())
-                .createdAt(wallet.getCreatedAt())
-                .updatedAt(wallet.getUpdatedAt())
                 .build();
-
     }
-
 }

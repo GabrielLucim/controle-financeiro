@@ -19,6 +19,5 @@ public class WalletRequest {
     @Size(max = 255, message = "A descrição deve possuir no máximo 255 caracteres.")
     private String description;
 
-    @NotNull(message = "O proprietário da carteira é obrigatório.")
     private Long ownerId;
 }

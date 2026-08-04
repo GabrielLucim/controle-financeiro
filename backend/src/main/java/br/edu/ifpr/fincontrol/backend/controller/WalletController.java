@@ -4,18 +4,12 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import br.edu.ifpr.fincontrol.backend.dto.request.WalletRequest;
 import br.edu.ifpr.fincontrol.backend.dto.response.WalletResponse;
+import br.edu.ifpr.fincontrol.backend.security.UserDetailsImpl;
 import br.edu.ifpr.fincontrol.backend.service.WalletService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,52 +17,49 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/wallets")
 @RequiredArgsConstructor
-@Validated
 public class WalletController {
 
-    private final WalletService service;
+    private final WalletService walletService;
 
     @PostMapping
     public ResponseEntity<WalletResponse> create(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody WalletRequest request) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.create(request));
-
+                .body(walletService.create(request, userDetails.getUser().getId()));
     }
 
     @GetMapping
-    public ResponseEntity<List<WalletResponse>> findAll() {
+    public ResponseEntity<List<WalletResponse>> findAll(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        return ResponseEntity.ok(service.findAll());
-
+        return ResponseEntity.ok(walletService.findAllByUserId(userDetails.getUser().getId()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<WalletResponse> findById(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        return ResponseEntity.ok(service.findById(id));
-
+        return ResponseEntity.ok(walletService.findById(id, userDetails.getUser().getId()));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<WalletResponse> update(
             @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody WalletRequest request) {
 
-        return ResponseEntity.ok(service.update(id, request));
-
+        return ResponseEntity.ok(walletService.update(id, request, userDetails.getUser().getId()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        service.delete(id);
-
-        return ResponseEntity.noContent().build();
-
+        walletService.delete(id, userDetails.getUser().getId());
     }
-
 }

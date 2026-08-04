@@ -5,12 +5,12 @@ import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import CreateWalletModal from "../../components/Wallet/CreateWalletModal";
 import { dashboardService } from "../../services/dashboardService";
+import { walletService } from "../../services/walletService";
 import "./Dashboard.css";
 
 function Dashboard() {
 
     const { user, logout } = useAuth();
-
     const navigate = useNavigate();
 
     const [summary, setSummary] = useState({
@@ -20,19 +20,14 @@ function Dashboard() {
     });
 
     const [wallets, setWallets] = useState([]);
-
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-
         loadDashboard();
-
     }, []);
 
     async function loadDashboard() {
-
         try {
-
             const data = await dashboardService.getDashboard();
 
             setSummary({
@@ -49,30 +44,32 @@ function Dashboard() {
             );
 
         } catch (error) {
-
             console.error("Erro ao carregar dashboard:", error);
         }
     }
 
     const handleLogout = () => {
-
         logout();
         navigate("/login");
-
     };
 
-    const handleCreateWallet = async () => {
+    const handleCreateWallet = async (walletData) => {
+        try {
+            await walletService.create({
+                name: walletData.name,
+                description: walletData.description
+            });
 
-        setShowModal(false);
-
-        await loadDashboard();
-
+            setShowModal(false);
+            await loadDashboard();
+        } catch (error) {
+            console.error("Erro ao criar carteira:", error);
+            alert(error.response?.data?.message || "Erro ao criar carteira.");
+        }
     };
 
     const openWallet = (id) => {
-
         navigate(`/app/wallets/${id}`);
-
     };
 
     return (
@@ -89,32 +86,30 @@ function Dashboard() {
                         </p>
                     </div>
                 </div>
+
                 <section className="dashboard-summary">
                     <div className="summary-card">
-                        <span className="summary-label">
-                            Saldo Total
-                        </span>
+                        <span className="summary-label">Saldo Total</span>
                         <h2 className="summary-value positive">
                             R$ {summary.balance.toFixed(2)}
                         </h2>
                     </div>
+
                     <div className="summary-card">
-                        <span className="summary-label">
-                            Receitas
-                        </span>
+                        <span className="summary-label">Receitas</span>
                         <h2 className="summary-value positive">
                             R$ {summary.income.toFixed(2)}
                         </h2>
                     </div>
+
                     <div className="summary-card">
-                        <span className="summary-label">
-                            Despesas
-                        </span>
+                        <span className="summary-label">Despesas</span>
                         <h2 className="summary-value negative">
                             R$ {summary.expense.toFixed(2)}
                         </h2>
                     </div>
                 </section>
+
                 <section className="wallet-grid">
                     {wallets.map(wallet => (
                         <div
@@ -122,12 +117,8 @@ function Dashboard() {
                             className="wallet-card"
                             onClick={() => openWallet(wallet.id)}
                         >
-                            <h3>
-                                {wallet.name}
-                            </h3>
-                            <p>
-                                {wallet.description || "Sem descrição"}
-                            </p>
+                            <h3>{wallet.name}</h3>
+                            <p>{wallet.description || "Sem descrição"}</p>
                             <div className="wallet-info">
                                 <span
                                     className={`wallet-balance ${wallet.balance >= 0
@@ -140,23 +131,25 @@ function Dashboard() {
                             </div>
                         </div>
                     ))}
+
                     <div
                         className="wallet-card add"
                         onClick={() => setShowModal(true)}
                     >
-                        <span>
-                            + Nova Carteira
-                        </span>
+                        <span>+ Nova Carteira</span>
                     </div>
                 </section>
             </main>
+
             <CreateWalletModal
                 open={showModal}
                 onClose={() => setShowModal(false)}
                 onCreate={handleCreateWallet}
             />
+
             <Footer />
         </div>
     );
 }
+
 export default Dashboard;
