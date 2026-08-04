@@ -6,10 +6,10 @@ import Footer from "../../components/Global/Footer/Footer";
 import CreateWalletModal from "../../components/Wallet/CreateWalletModal";
 import { dashboardService } from "../../services/dashboardService";
 import { walletService } from "../../services/walletService";
+import { FaTrash } from "react-icons/fa";
 import "./Dashboard.css";
 
 function Dashboard() {
-
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -42,16 +42,10 @@ function Dashboard() {
                     balance: Number(wallet.balance)
                 }))
             );
-
         } catch (error) {
             console.error("Erro ao carregar dashboard:", error);
         }
     }
-
-    const handleLogout = () => {
-        logout();
-        navigate("/login");
-    };
 
     const handleCreateWallet = async (walletData) => {
         try {
@@ -68,8 +62,25 @@ function Dashboard() {
         }
     };
 
+    const handleDeleteWallet = async (e, walletId, walletName) => {
+        e.stopPropagation(); // Impede que o clique abra a tela de transações
+
+        if (!window.confirm(`Deseja realmente excluir a carteira "${walletName}"? Todas as transações vinculadas serão removidas.`)) {
+            return;
+        }
+
+        try {
+            await walletService.delete(walletId);
+            await loadDashboard();
+        } catch (error) {
+            console.error("Erro ao excluir carteira:", error);
+            alert(error.response?.data?.message || "Erro ao excluir carteira.");
+        }
+    };
+
+    // Redireciona para a tela de transações com o id da carteira na URL
     const openWallet = (id) => {
-        navigate(`/app/wallets/${id}`);
+        navigate(`/app/transacoes?walletId=${id}`);
     };
 
     return (
@@ -116,15 +127,28 @@ function Dashboard() {
                             key={wallet.id}
                             className="wallet-card"
                             onClick={() => openWallet(wallet.id)}
+                            style={{ position: 'relative' }}
                         >
+                            <button
+                                className="delete-button"
+                                title="Excluir Carteira"
+                                onClick={(e) => handleDeleteWallet(e, wallet.id, wallet.name)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '16px',
+                                    right: '16px',
+                                    width: '32px',
+                                    height: '32px'
+                                }}
+                            >
+                                <FaTrash size={12} />
+                            </button>
+
                             <h3>{wallet.name}</h3>
                             <p>{wallet.description || "Sem descrição"}</p>
                             <div className="wallet-info">
                                 <span
-                                    className={`wallet-balance ${wallet.balance >= 0
-                                        ? "positive"
-                                        : "negative"
-                                        }`}
+                                    className={`wallet-balance ${wallet.balance >= 0 ? "positive" : "negative"}`}
                                 >
                                     Saldo: R$ {wallet.balance.toFixed(2)}
                                 </span>

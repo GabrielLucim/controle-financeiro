@@ -6,7 +6,8 @@ import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,36 +32,34 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(
-            BusinessException ex) {
+    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
-                .error(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase())
-                .message(ex.getMessage())
-                .build();
+            ErrorResponse error = ErrorResponse.builder()
+                            .timestamp(LocalDateTime.now())
+                            .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
+                            .error(HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase())
+                            .message(ex.getMessage())
+                            .build();
 
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
-
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error);
     }
 
-   /*
-    * @ExceptionHandler(AccessDeniedException.class)
-    * public ResponseEntity<ErrorResponse> handleAccessDenied(
-    * AccessDeniedException ex) {
-    * 
-    * ErrorResponse error = ErrorResponse.builder()
-    * .timestamp(LocalDateTime.now())
-    * .status(HttpStatus.FORBIDDEN.value())
-    * .error(HttpStatus.FORBIDDEN.getReasonPhrase())
-    * .message("Acesso negado.")
-    * .build();
-    * 
-    * return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
-    * 
-    * }
-    */
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+    AccessDeniedException ex) {
+    
+    ErrorResponse error = ErrorResponse.builder()
+    .timestamp(LocalDateTime.now())
+    .status(HttpStatus.FORBIDDEN.value())
+    .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+    .message("Acesso negado.")
+    .build();
+    
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    
+    }
+
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(

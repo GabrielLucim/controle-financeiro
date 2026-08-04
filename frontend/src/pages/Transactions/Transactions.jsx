@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom"; // 👈 Adicionar import do useSearchParams
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
@@ -9,13 +10,22 @@ import { categoryService } from "../../services/categoryService";
 import "./Transactions.css";
 
 function Transactions() {
+    const [searchParams] = useSearchParams();
+    const walletIdFromUrl = searchParams.get("walletId"); // Pega o walletId da URL se existir
+
     const [transactions, setTransactions] = useState([]);
     const [wallets, setWallets] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [selectedWallet, setSelectedWallet] = useState("all");
+    const [selectedWallet, setSelectedWallet] = useState(walletIdFromUrl || "all");
     const [showModal, setShowModal] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (walletIdFromUrl) {
+            setSelectedWallet(walletIdFromUrl);
+        }
+    }, [walletIdFromUrl]);
 
     useEffect(() => {
         loadData();

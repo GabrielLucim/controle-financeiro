@@ -25,11 +25,11 @@ public class Wallet {
     @Column(length = 255)
     private String description;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    @OneToMany(mappedBy = "wallet")
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> transactions;
 
     @Column(nullable = false, updatable = false)
@@ -48,5 +48,4 @@ public class Wallet {
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 }
