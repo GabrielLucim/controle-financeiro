@@ -1,46 +1,66 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import CreateTransactionModal from "../../components/Transactions/CreateTransactionModal";
-import { dashboardMock } from "../../mocks/dashboardMock";
-import { transactionMock } from "../../mocks/transactionMock";
+import { transactionService } from "../../services/transactionService";
+import { walletService } from "../../services/walletService";
+import { categoryService } from "../../services/categoryService";
 import "./Transactions.css";
 
 function Transactions() {
-
-    const [transactions, setTransactions] = useState(transactionMock);
+    const [transactions, setTransactions] = useState([]);
+    const [wallets, setWallets] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [selectedWallet, setSelectedWallet] = useState("all");
     const [showModal, setShowModal] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    async function loadData() {
+        try {
+            setLoading(true);
+            const [transData, walletData, catData] = await Promise.all([
+                transactionService.getAll(),
+                walletService.findAll(),
+                categoryService.getAll()
+            ]);
+            setTransactions(transData);
+            setWallets(walletData);
+            setCategories(catData);
+        } catch (error) {
+            console.error("Erro ao carregar dados de transações:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     const filteredTransactions = useMemo(() => {
         if (selectedWallet === "all") {
             return transactions;
         }
         return transactions.filter(
-            transaction =>
-                transaction.walletId === Number(selectedWallet)
+            transaction => Number(transaction.walletId) === Number(selectedWallet)
         );
     }, [transactions, selectedWallet]);
 
-    const handleCreateTransaction = (transaction) => {
-        if (editingTransaction) {
-            setTransactions(prev =>
-                prev.map(item =>
-                    item.id === transaction.id
-                        ? transaction
-                        : item
-                )
-            );
-        } else {
-            setTransactions(prev => [
-                ...prev,
-                transaction
-            ]);
+    const handleSaveTransaction = async (transactionData) => {
+        try {
+            if (editingTransaction) {
+                await transactionService.update(editingTransaction.id, transactionData);
+            } else {
+                await transactionService.create(transactionData);
+            }
+            await loadData();
+            handleCloseModal();
+        } catch (error) {
+            console.error("Erro ao salvar transação:", error);
+            alert(error.response?.data?.message || "Erro ao salvar transação.");
         }
-        setEditingTransaction(null);
-        setShowModal(false);
     };
 
     const handleEditTransaction = (transaction) => {
@@ -48,16 +68,18 @@ function Transactions() {
         setShowModal(true);
     };
 
-    const handleDeleteTransaction = (id) => {
+    const handleDeleteTransaction = async (id) => {
         if (!window.confirm("Deseja realmente excluir esta transação?")) {
             return;
         }
 
-        setTransactions(prev =>
-            prev.filter(
-                transaction => transaction.id !== id
-            )
-        );
+        try {
+            await transactionService.delete(id);
+            await loadData();
+        } catch (error) {
+            console.error("Erro ao excluir transação:", error);
+            alert("Erro ao excluir transação.");
+        }
     };
 
     const handleCloseModal = () => {
@@ -71,9 +93,7 @@ function Transactions() {
             <main className="transactions-content">
                 <div className="transactions-header">
                     <div>
-                        <h1 className="transactions-title">
-                            Transações
-                        </h1>
+                        <h1 className="transactions-title">Transações</h1>
                         <p className="transactions-subtitle">
                             Gerencie as movimentações das suas carteiras.
                         </p>
@@ -88,35 +108,27 @@ function Transactions() {
                     >
                         + Nova Transação
                     </button>
-
                 </div>
+
                 <section className="transactions-toolbar">
                     <div className="transactions-field">
-                        <label htmlFor="wallet">
-                            Carteira
-                        </label>
+                        <label htmlFor="wallet">Carteira</label>
                         <select
                             id="wallet"
                             className="transactions-select"
                             value={selectedWallet}
-                            onChange={(e) =>
-                                setSelectedWallet(e.target.value)
-                            }
+                            onChange={(e) => setSelectedWallet(e.target.value)}
                         >
-                            <option value="all">
-                                Todas as carteiras
-                            </option>
-                            {dashboardMock.wallets.map(wallet => (
-                                <option
-                                    key={wallet.id}
-                                    value={wallet.id}
-                                >
+                            <option value="all">Todas as carteiras</option>
+                            {wallets.map(wallet => (
+                                <option key={wallet.id} value={wallet.id}>
                                     {wallet.name}
                                 </option>
                             ))}
                         </select>
                     </div>
                 </section>
+
                 <section className="transactions-table">
                     <table>
                         <thead>
@@ -130,50 +142,47 @@ function Transactions() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredTransactions.length === 0 ? (
+                            {loading ? (
                                 <tr>
-                                    <td
-                                        colSpan="6"
-                                        className="transactions-empty-table"
-                                    >
+                                    <td colSpan="6" className="transactions-empty-table">
+                                        Carregando transações...
+                                    </td>
+                                </tr>
+                            ) : filteredTransactions.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="transactions-empty-table">
                                         Nenhuma transação encontrada.
-
                                     </td>
                                 </tr>
                             ) : (
                                 filteredTransactions.map(transaction => (
                                     <tr key={transaction.id}>
-                                        <td>
-                                            {transaction.description}
-                                        </td>
-                                        <td>
-                                            {transaction.category}
-                                        </td>
+                                        <td>{transaction.description}</td>
+                                        <td>{transaction.categoryName || transaction.category}</td>
                                         <td>
                                             <span
                                                 className={
-                                                    transaction.type === "income"
+                                                    transaction.type === "INCOME" || transaction.type === "income"
                                                         ? "badge income"
                                                         : "badge expense"
                                                 }
                                             >
-                                                {transaction.type === "income"
+                                                {transaction.type === "INCOME" || transaction.type === "income"
                                                     ? "Receita"
                                                     : "Despesa"}
                                             </span>
                                         </td>
                                         <td
                                             className={
-                                                transaction.type === "income"
+                                                transaction.type === "INCOME" || transaction.type === "income"
                                                     ? "value-positive"
                                                     : "value-negative"
                                             }
                                         >
-                                            {transaction.type === "income"
+                                            {transaction.type === "INCOME" || transaction.type === "income"
                                                 ? "+"
                                                 : "-"}
-
-                                            R$ {transaction.value.toFixed(2)}
+                                            R$ {Number(transaction.amount || transaction.value || 0).toFixed(2)}
                                         </td>
                                         <td>
                                             {transaction.date}
@@ -182,18 +191,14 @@ function Transactions() {
                                             <div className="transaction-actions">
                                                 <button
                                                     className="edit-button"
-                                                    onClick={() =>
-                                                        handleEditTransaction(transaction)
-                                                    }
+                                                    onClick={() => handleEditTransaction(transaction)}
                                                     title="Editar"
                                                 >
                                                     <FaEdit />
                                                 </button>
                                                 <button
                                                     className="delete-button"
-                                                    onClick={() =>
-                                                        handleDeleteTransaction(transaction.id)
-                                                    }
+                                                    onClick={() => handleDeleteTransaction(transaction.id)}
                                                     title="Excluir"
                                                 >
                                                     <FaTrash />
@@ -207,11 +212,13 @@ function Transactions() {
                     </table>
                 </section>
             </main>
+
             <CreateTransactionModal
                 open={showModal}
                 onClose={handleCloseModal}
-                onSave={handleCreateTransaction}
-                wallets={dashboardMock.wallets}
+                onSave={handleSaveTransaction}
+                wallets={wallets}
+                categories={categories}
                 editingTransaction={editingTransaction}
             />
             <Footer />
