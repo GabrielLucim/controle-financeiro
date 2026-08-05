@@ -18,6 +18,7 @@ public class EmailService {
     private final TemplateEngine templateEngine;
 
     public void sendPasswordResetEmail(String to, String name, String resetLink) {
+        
         try {
             Context context = new Context();
             context.setVariable("userName", name);
@@ -29,12 +30,16 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
             helper.setSubject("Recuperação de Senha - FinControl");
-            helper.setText(process, true);
             helper.setTo(to);
+            helper.setFrom("20241pvai10030005@estudantes.ifpr.edu.br");
+            helper.setText(process, true);
 
             mailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Falha ao enviar e-mail de recuperação de senha.", e);
+
+            System.out.println("Email enviado!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

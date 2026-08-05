@@ -40,7 +40,6 @@ public class AuthController {
     public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
 
         authService.forgotPassword(request);
-
     }
 
     @PostMapping("/reset-password")
