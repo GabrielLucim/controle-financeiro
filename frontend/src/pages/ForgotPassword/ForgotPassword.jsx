@@ -54,38 +54,26 @@ export const ForgotPassword = () => {
         } finally {
 
             setIsLoading(false);
-
         }
-
     };
 
     return (
         <div className="auth-page">
-
             <Header />
-
             <main className="auth-container">
-
                 <div className="auth-card">
-
                     <h2 className="auth-title">
                         Recuperar Senha
                     </h2>
-
                     <p className="auth-subtitle">
                         Informe seu e-mail para receber as instruções
                     </p>
-
                     {successMessage ? (
-
                         <div className="success-banner">
-
                             <FaCheckCircle className="success-icon" />
-
                             <p className="success-text">
                                 {successMessage}
                             </p>
-
                             <Link
                                 className="auth-link"
                                 style={{
@@ -96,26 +84,20 @@ export const ForgotPassword = () => {
                             >
                                 Voltar para o Login
                             </Link>
-
                         </div>
-
                     ) : (
-
                         <form
                             className="form"
                             onSubmit={handleSubmit}
                             noValidate
                         >
-
                             <div className="input-group">
-
                                 <label
                                     className="form-label"
                                     htmlFor="email"
                                 >
                                     E-mail Cadastrado
                                 </label>
-
                                 <input
                                     type="email"
                                     id="email"
@@ -124,15 +106,12 @@ export const ForgotPassword = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
-
                                 {error && (
                                     <p className="field-error">
                                         {error}
                                     </p>
                                 )}
-
                             </div>
-
                             <button
                                 type="submit"
                                 className="form-button"
@@ -142,30 +121,20 @@ export const ForgotPassword = () => {
                                     ? "Enviando..."
                                     : "Enviar Link"}
                             </button>
-
                             <p className="auth-footer-text">
-
                                 Lembrou a senha?{" "}
-
                                 <Link
                                     className="auth-link"
                                     to="/login"
                                 >
                                     Entre aqui
                                 </Link>
-
                             </p>
-
                         </form>
-
                     )}
-
                 </div>
-
             </main>
-
             <Footer />
-
         </div>
     );
 
