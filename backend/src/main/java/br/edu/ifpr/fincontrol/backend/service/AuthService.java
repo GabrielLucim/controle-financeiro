@@ -49,8 +49,7 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException("E-mail ou senha inválidos."));
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BusinessException("E-mail ou senha inválidos."));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BusinessException("E-mail ou senha inválidos.");
@@ -68,6 +67,8 @@ public class AuthService {
     public void forgotPassword(ForgotPasswordRequest request) {
 
         userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+
+            resetTokenRepository.deleteByUserId(user.getId());
 
             String token = java.util.UUID.randomUUID().toString();
 
@@ -90,20 +91,19 @@ public class AuthService {
 
     public void resetPassword(ResetPasswordRequest request) {
 
-        PasswordResetToken resetToken = resetTokenRepository.findByToken(request.getToken())
-                .orElseThrow(() -> new BusinessException("Token inválido ou expirado."));
+        PasswordResetToken resetToken = resetTokenRepository.findByToken(request.getToken()).orElseThrow(() -> new BusinessException("Token inválido ou expirado."));
 
         if (resetToken.isUsed() || resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BusinessException("Token inválido ou expirado.");
         }
 
         User user = resetToken.getUser();
+
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
 
         userRepository.save(user);
 
-        resetToken.setUsed(true);
-        resetTokenRepository.save(resetToken);
+        resetTokenRepository.delete(resetToken);
 
     }
 

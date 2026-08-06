@@ -18,7 +18,7 @@ public class EmailService {
     private final TemplateEngine templateEngine;
 
     public void sendPasswordResetEmail(String to, String name, String resetLink) {
-        
+
         try {
             Context context = new Context();
             context.setVariable("userName", name);
@@ -31,7 +31,7 @@ public class EmailService {
 
             helper.setSubject("Recuperação de Senha - FinControl");
             helper.setTo(to);
-            helper.setFrom("20241pvai10030005@estudantes.ifpr.edu.br");
+            helper.setFrom("seu-email-real@gmail.com");
             helper.setText(process, true);
 
             mailSender.send(mimeMessage);

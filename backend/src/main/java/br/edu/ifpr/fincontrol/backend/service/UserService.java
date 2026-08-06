@@ -11,6 +11,7 @@ import br.edu.ifpr.fincontrol.backend.dto.response.UserResponse;
 import br.edu.ifpr.fincontrol.backend.entity.User;
 import br.edu.ifpr.fincontrol.backend.exception.BusinessException;
 import br.edu.ifpr.fincontrol.backend.exception.ResourceNotFoundException;
+import br.edu.ifpr.fincontrol.backend.repository.PasswordResetTokenRepository;
 import br.edu.ifpr.fincontrol.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,7 @@ public class UserService {
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     public UserResponse create(UserRequest request) {
 
@@ -68,6 +70,8 @@ public class UserService {
 
         User user = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        passwordResetTokenRepository.deleteByUserId(id);
 
         repository.delete(user);
 

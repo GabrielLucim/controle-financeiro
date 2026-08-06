@@ -37,6 +37,9 @@ public class User {
     @OneToMany(mappedBy = "owner")
     private List<Wallet> wallets;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PasswordResetToken> passwordResetTokens;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
