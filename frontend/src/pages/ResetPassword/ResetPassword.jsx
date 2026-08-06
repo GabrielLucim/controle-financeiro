@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaCheckCircle } from "react-icons/fa";
 import Header from "../../components/Global/Header/Header.jsx";
 import Footer from "../../components/Global/Footer/Footer.jsx";
+import { authService } from "../../services/authService";
 import "./ResetPassword.css";
 
 export const ResetPassword = () => {
@@ -72,14 +73,28 @@ export const ResetPassword = () => {
         setError("");
         setIsLoading(true);
 
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+
+            await authService.resetPassword(token, password);
+
             setSuccessMessage("Senha redefinida com sucesso! Redirecionando...");
 
             setTimeout(() => {
                 navigate("/login");
             }, 2500);
-        }, 1500);
+
+        } catch (err) {
+
+            setError(
+                err.response?.data?.message ||
+                "Token inválido ou expirado."
+            );
+
+        } finally {
+
+            setIsLoading(false);
+
+        }
     };
 
     return (
