@@ -30,7 +30,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         return path.startsWith("/auth/")
                 || path.equals("/actuator/health");
-
     }
 
     @Override
@@ -75,7 +74,5 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-
     }
-
 }

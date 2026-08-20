@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ifpr.fincontrol.backend.dto.request.ForgotPasswordRequest;
 import br.edu.ifpr.fincontrol.backend.dto.request.LoginRequest;
@@ -63,7 +64,8 @@ public class AuthService {
                 .build();
 
     }
-
+    
+    @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
 
         userRepository.findByEmail(request.getEmail()).ifPresent(user -> {

@@ -63,7 +63,7 @@ function Dashboard() {
     };
 
     const handleDeleteWallet = async (e, walletId, walletName) => {
-        e.stopPropagation(); // Impede que o clique abra a tela de transações
+        e.stopPropagation();
 
         if (!window.confirm(`Deseja realmente excluir a carteira "${walletName}"? Todas as transações vinculadas serão removidas.`)) {
             return;
@@ -78,7 +78,6 @@ function Dashboard() {
         }
     };
 
-    // Redireciona para a tela de transações com o id da carteira na URL
     const openWallet = (id) => {
         navigate(`/app/transacoes?walletId=${id}`);
     };

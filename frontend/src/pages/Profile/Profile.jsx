@@ -22,19 +22,19 @@ function Profile() {
     const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
     const getPasswordStrength = (pass) => {
-
-        if (!pass)
+        
+        if (!pass) {
             return {
                 label: "",
-                color: "",
+                color: "transparent",
                 width: "0%"
             };
+        }
 
         let score = 0;
 
-        if (pass.length >= 6) score++;
-        if (/[A-Z]/.test(pass)) score++;
-        if (/[0-9]/.test(pass)) score++;
+        if (pass.length >= 8) score++;
+        if (/[a-zA-Z]/.test(pass) && /[0-9]/.test(pass)) score++;
         if (/[^A-Za-z0-9]/.test(pass)) score++;
 
         switch (score) {
@@ -51,7 +51,6 @@ function Profile() {
                     width: "66%"
                 };
             case 3:
-            case 4:
                 return {
                     label: "Forte",
                     color: "#2ecc71",

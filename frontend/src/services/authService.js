@@ -8,9 +8,7 @@ export const authService = {
             email,
             password
         });
-
         return response.data;
-
     },
 
     async register(name, email, password) {
@@ -20,19 +18,15 @@ export const authService = {
             email,
             password
         });
-
         return response.data;
-
     },
 
     async forgotPassword(email) {
-
         const response = await api.post("/auth/forgot-password", {
             email
         });
 
         return response.data;
-
     },
 
     async resetPassword(token, newPassword) {
@@ -41,9 +35,7 @@ export const authService = {
             token,
             newPassword
         });
-
         return response.data;
-
     },
 
     async changePassword(currentPassword, newPassword) {
@@ -52,9 +44,6 @@ export const authService = {
             currentPassword,
             newPassword
         });
-
         return response.data;
-
     }
-
 };

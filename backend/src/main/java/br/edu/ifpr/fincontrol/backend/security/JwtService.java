@@ -47,7 +47,6 @@ public class JwtService {
                 .getPayload();
 
         return claims.getSubject();
-
     }
 
     public String extractEmail(String token) {
@@ -59,7 +58,6 @@ public class JwtService {
                 .getPayload();
 
         return claims.get("email", String.class);
-
     }
 
     public boolean isTokenValid(String token) {
@@ -78,7 +76,5 @@ public class JwtService {
             return false;
 
         }
-
     }
-
 }

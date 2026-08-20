@@ -11,7 +11,7 @@ import "./Transactions.css";
 
 function Transactions() {
     const [searchParams] = useSearchParams();
-    const walletIdFromUrl = searchParams.get("walletId"); // Pega o walletId da URL se existir
+    const walletIdFromUrl = searchParams.get("walletId");
 
     const [transactions, setTransactions] = useState([]);
     const [wallets, setWallets] = useState([]);
