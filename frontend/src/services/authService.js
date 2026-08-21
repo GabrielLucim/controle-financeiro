@@ -45,5 +45,10 @@ export const authService = {
             newPassword
         });
         return response.data;
+    },
+
+    async startPasswordReset(token) {
+        const response = await api.post(`/auth/start-reset?token=${token}`);
+        return response.data;
     }
 };

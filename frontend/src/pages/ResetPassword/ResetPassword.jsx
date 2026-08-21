@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaCheckCircle } from "react-icons/fa";
 import Header from "../../components/Global/Header/Header.jsx";
@@ -15,13 +15,36 @@ export const ResetPassword = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const [confirmPasswordError, setConfirmPasswordError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 
+    useEffect(() => {
+        const initializeResetProcess = async () => {
+            if (!token) {
+                setError("Token de recuperação inválido ou inexistente.");
+                setIsInitialLoading(false);
+                return;
+            }
+
+            try {
+                await authService.startPasswordReset(token);
+            } catch (err) {
+                setError(
+                    err.response?.data?.message ||
+                    "Token inválido ou expirado. Solicite uma nova recuperação."
+                );
+            } finally {
+                setIsInitialLoading(false);
+            }
+        };
+
+        initializeResetProcess();
+    }, [token]);
+
     const getPasswordStrength = (pass) => {
-        
         if (!pass) {
             return {
                 label: "",
@@ -101,7 +124,6 @@ export const ResetPassword = () => {
         setIsLoading(true);
 
         try {
-
             await authService.resetPassword(token, password);
 
             setSuccessMessage("Senha redefinida com sucesso! Redirecionando...");
@@ -111,16 +133,12 @@ export const ResetPassword = () => {
             }, 2500);
 
         } catch (err) {
-
             setError(
                 err.response?.data?.message ||
                 "Token inválido ou expirado."
             );
-
         } finally {
-
             setIsLoading(false);
-
         }
     };
 
@@ -132,14 +150,24 @@ export const ResetPassword = () => {
                     <h2 className="auth-title">Nova Senha</h2>
                     <p className="auth-subtitle">Crie uma senha forte e segura</p>
 
-                    {successMessage ? (
+                    {isInitialLoading ? (
+                        <div className="loading-container">
+                            <p>Validando link de recuperação...</p>
+                        </div>
+                    ) : successMessage ? (
                         <div className="success-banner">
                             <FaCheckCircle className="success-icon" />
                             <p className="success-text">{successMessage}</p>
                         </div>
+                    ) : error ? (
+                        <div className="error-container">
+                            <p className="form-error">{error}</p>
+                            <Link to="/esqueci-senha" className="auth-link" style={{ marginTop: "1rem", display: "inline-block" }}>
+                                Solicitar novo e-mail de recuperação
+                            </Link>
+                        </div>
                     ) : (
                         <form className="form" onSubmit={handleSubmit} noValidate>
-                            {/* Nova Senha */}
                             <div className="input-group">
                                 <label className="form-label" htmlFor="password">Nova Senha</label>
                                 <div className="form-input-wrapper">
@@ -167,8 +195,6 @@ export const ResetPassword = () => {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Confirmação */}
                             <div className="input-group">
                                 <label className="form-label" htmlFor="confirmPassword">Confirme a Senha</label>
                                 <div className="form-input-wrapper">
@@ -187,8 +213,6 @@ export const ResetPassword = () => {
                                 </div>
                                 {confirmPasswordError && <p className="field-error">{confirmPasswordError}</p>}
                             </div>
-
-                            {error && <p className="form-error">{error}</p>}
 
                             <button type="submit" className="form-button" disabled={isLoading}>
                                 {isLoading ? "Alterando..." : "Redefinir Senha"}

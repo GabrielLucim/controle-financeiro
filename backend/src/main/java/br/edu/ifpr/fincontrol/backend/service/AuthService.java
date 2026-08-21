@@ -45,12 +45,24 @@ public class AuthService {
         userRepository.save(user);
 
         return toResponse(user);
-
     }
 
     public LoginResponse login(LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BusinessException("E-mail ou senha inválidos."));
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("E-mail ou senha inválidos."));
+
+        PasswordResetToken activeReset = resetTokenRepository
+                .findByUserIdAndUsedFalse(user.getId())
+                .orElse(null);
+
+        if (activeReset != null
+                && activeReset.isResetStarted()
+                && activeReset.getExpiresAt().isAfter(LocalDateTime.now())) {
+
+            throw new BusinessException(
+                    "Existe uma recuperação de senha em andamento. Defina uma nova senha antes de fazer login.");
+        }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BusinessException("E-mail ou senha inválidos.");
@@ -62,9 +74,8 @@ public class AuthService {
                 .accessToken(token)
                 .user(toResponse(user))
                 .build();
-
     }
-    
+
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
 
@@ -79,34 +90,52 @@ public class AuthService {
                     .user(user)
                     .expiresAt(LocalDateTime.now().plusHours(1))
                     .used(false)
+                    .resetStarted(false)
                     .build();
 
             resetTokenRepository.save(resetToken);
 
             String resetLink = "http://localhost:5173/redefinir-senha/" + token;
 
-            emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetLink);
-
+            emailService.sendPasswordResetEmail(
+                    user.getEmail(),
+                    user.getName(),
+                    resetLink);
         });
+    }
+
+    public void startPasswordReset(String token) {
+
+        PasswordResetToken resetToken = resetTokenRepository
+                .findByToken(token)
+                .orElseThrow(() -> new BusinessException("Token inválido ou expirado."));
+
+        if (resetToken.isUsed() || resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+
+            throw new BusinessException("Token inválido ou expirado.");
+        }
+
+        resetToken.setResetStarted(true);
+        resetTokenRepository.save(resetToken);
 
     }
 
     public void resetPassword(ResetPasswordRequest request) {
 
-        PasswordResetToken resetToken = resetTokenRepository.findByToken(request.getToken()).orElseThrow(() -> new BusinessException("Token inválido ou expirado."));
+        PasswordResetToken resetToken = resetTokenRepository
+            .findByToken(request.getToken())
+            .orElseThrow(() -> new BusinessException("Token inválido ou expirado."));
 
         if (resetToken.isUsed() || resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+
             throw new BusinessException("Token inválido ou expirado.");
         }
 
         User user = resetToken.getUser();
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-
         userRepository.save(user);
-
         resetTokenRepository.delete(resetToken);
-
     }
 
     private UserResponse toResponse(User user) {
@@ -118,7 +147,5 @@ public class AuthService {
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
-
     }
-
 }

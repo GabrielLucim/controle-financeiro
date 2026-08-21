@@ -50,4 +50,10 @@ public class AuthController {
 
     }
 
+    @PostMapping("/start-reset")
+    @ResponseStatus(HttpStatus.OK)
+    public void startPasswordReset(@RequestParam String token) {
+        authService.startPasswordReset(token);
+    }
+
 }
