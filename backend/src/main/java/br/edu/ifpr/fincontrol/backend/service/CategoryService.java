@@ -26,7 +26,6 @@ public class CategoryService {
 
         Category category = Category.builder()
             .name(request.getName())
-            .type(request.getType())
             .owner(owner)
             .build();
 
@@ -66,7 +65,6 @@ public class CategoryService {
         }
 
         category.setName(request.getName());
-        category.setType(request.getType());
 
         category = repository.save(category);
 
@@ -91,7 +89,6 @@ public class CategoryService {
         return CategoryResponse.builder()
                 .id(category.getId())
                 .name(category.getName())
-                .type(category.getType())
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .build();

@@ -90,55 +90,44 @@ function Categories() {
                         <thead>
                             <tr>
                                 <th>Nome</th>
-                                <th>Tipo</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="3" className="categories-empty-table">
+                                    <td colSpan="2" className="categories-empty-table">
                                         Carregando categorias...
                                     </td>
                                 </tr>
                             ) : categories.length === 0 ? (
                                 <tr>
-                                    <td colSpan="3" className="categories-empty-table">
+                                    <td colSpan="2" className="categories-empty-table">
                                         Nenhuma categoria cadastrada.
                                     </td>
                                 </tr>
                             ) : (
-                                categories.map((category) => {
-                                    const isIncome =
-                                        category.type === "INCOME" || category.type === "income";
-
-                                    return (
-                                        <tr key={category.id}>
-                                            <td>{category.name}</td>
-                                            <td>
-                                                <span className={isIncome ? "badge-income" : "badge-expense"}>
-                                                    {isIncome ? "Receita" : "Despesa"}
-                                                </span>
-                                            </td>
-                                            <td className="categories-actions">
-                                                <button
-                                                    className="edit-button"
-                                                    onClick={() => handleEdit(category)}
-                                                    title="Editar"
-                                                >
-                                                    <FaEdit />
-                                                </button>
-                                                <button
-                                                    className="delete-button"
-                                                    onClick={() => handleDelete(category.id)}
-                                                    title="Excluir"
-                                                >
-                                                    <FaTrash />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
+                                categories.map((category) => (
+                                    <tr key={category.id}>
+                                        <td>{category.name}</td>
+                                        <td className="categories-actions">
+                                            <button
+                                                className="edit-button"
+                                                onClick={() => handleEdit(category)}
+                                                title="Editar"
+                                            >
+                                                <FaEdit />
+                                            </button>
+                                            <button
+                                                className="delete-button"
+                                                onClick={() => handleDelete(category.id)}
+                                                title="Excluir"
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
                             )}
                         </tbody>
                     </table>

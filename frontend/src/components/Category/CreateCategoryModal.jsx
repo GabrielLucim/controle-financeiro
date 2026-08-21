@@ -3,7 +3,6 @@ import "./CreateCategoryModal.css";
 
 function CreateCategoryModal({ open, onClose, onSave, editingCategory }) {
     const [name, setName] = useState("");
-    const [type, setType] = useState("EXPENSE");
     const [error, setError] = useState("");
 
     const modalRef = useRef(null);
@@ -13,10 +12,8 @@ function CreateCategoryModal({ open, onClose, onSave, editingCategory }) {
 
         if (editingCategory) {
             setName(editingCategory.name || "");
-            setType(editingCategory.type?.toUpperCase() || "EXPENSE");
         } else {
             setName("");
-            setType("EXPENSE");
         }
 
         setError("");
@@ -24,7 +21,6 @@ function CreateCategoryModal({ open, onClose, onSave, editingCategory }) {
 
     const handleClose = () => {
         setName("");
-        setType("EXPENSE");
         setError("");
         onClose();
     };
@@ -39,7 +35,6 @@ function CreateCategoryModal({ open, onClose, onSave, editingCategory }) {
 
         onSave({
             name: name.trim(),
-            type: type.toUpperCase()
         });
     };
 
@@ -113,17 +108,6 @@ function CreateCategoryModal({ open, onClose, onSave, editingCategory }) {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
-                    </div>
-
-                    <div className="category-group">
-                        <label>Tipo</label>
-                        <select
-                            value={type}
-                            onChange={(e) => setType(e.target.value)}
-                        >
-                            <option value="INCOME">Receita</option>
-                            <option value="EXPENSE">Despesa</option>
-                        </select>
                     </div>
 
                     {error && <p className="category-error">{error}</p>}

@@ -3,7 +3,6 @@ package br.edu.ifpr.fincontrol.backend.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import br.edu.ifpr.fincontrol.backend.entity.enums.CategoryType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,10 +21,6 @@ public class Category {
 
     @Column(nullable = false, length = 80)
     private String name;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CategoryType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
