@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import CreateCategoryModal from "../../components/Category/CreateCategoryModal";
+import DeleteConfirmModal from "../../components/Global/DeleteConfirmModal/DeleteConfirmModal";
 import { categoryService } from "../../services/categoryService";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import "./Categories.css";
@@ -10,6 +11,7 @@ function Categories() {
     const [categories, setCategories] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -49,13 +51,12 @@ function Categories() {
         setShowModal(true);
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Deseja realmente excluir esta categoria?")) {
-            return;
-        }
+    const handleConfirmDelete = async () => {
+        if (!categoryToDelete) return;
 
         try {
-            await categoryService.delete(id);
+            await categoryService.delete(categoryToDelete.id);
+            setCategoryToDelete(null);
             await loadCategories();
         } catch (error) {
             console.error("Erro ao excluir categoria:", error);
@@ -120,7 +121,7 @@ function Categories() {
                                             </button>
                                             <button
                                                 className="delete-button"
-                                                onClick={() => handleDelete(category.id)}
+                                                onClick={() => setCategoryToDelete(category)}
                                                 title="Excluir"
                                             >
                                                 <FaTrash />
@@ -143,6 +144,19 @@ function Categories() {
                 onSave={handleSave}
                 editingCategory={editingCategory}
             />
+
+            <DeleteConfirmModal
+                open={Boolean(categoryToDelete)}
+                onClose={() => setCategoryToDelete(null)}
+                onConfirm={handleConfirmDelete}
+                title="Excluir Categoria"
+                message={
+                    <>
+                        Deseja realmente excluir a categoria <strong>{categoryToDelete?.name}</strong>?
+                    </>
+                }
+            />
+
             <Footer />
         </div>
     );

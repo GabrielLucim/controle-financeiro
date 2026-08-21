@@ -4,6 +4,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import CreateTransactionModal from "../../components/Transactions/CreateTransactionModal";
+import DeleteConfirmModal from "../../components/Global/DeleteConfirmModal/DeleteConfirmModal";
 import { transactionService } from "../../services/transactionService";
 import { walletService } from "../../services/walletService";
 import { categoryService } from "../../services/categoryService";
@@ -19,6 +20,7 @@ function Transactions() {
     const [selectedWallet, setSelectedWallet] = useState(walletIdFromUrl || "all");
     const [showModal, setShowModal] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState(null);
+    const [transactionToDelete, setTransactionToDelete] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -78,13 +80,12 @@ function Transactions() {
         setShowModal(true);
     };
 
-    const handleDeleteTransaction = async (id) => {
-        if (!window.confirm("Deseja realmente excluir esta transação?")) {
-            return;
-        }
+    const handleConfirmDeleteTransaction = async () => {
+        if (!transactionToDelete) return;
 
         try {
-            await transactionService.delete(id);
+            await transactionService.delete(transactionToDelete.id);
+            setTransactionToDelete(null);
             await loadData();
         } catch (error) {
             console.error("Erro ao excluir transação:", error);
@@ -208,7 +209,7 @@ function Transactions() {
                                                 </button>
                                                 <button
                                                     className="delete-button"
-                                                    onClick={() => handleDeleteTransaction(transaction.id)}
+                                                    onClick={() => setTransactionToDelete(transaction)}
                                                     title="Excluir"
                                                 >
                                                     <FaTrash />
@@ -231,6 +232,19 @@ function Transactions() {
                 categories={categories}
                 editingTransaction={editingTransaction}
             />
+
+            <DeleteConfirmModal
+                open={Boolean(transactionToDelete)}
+                onClose={() => setTransactionToDelete(null)}
+                onConfirm={handleConfirmDeleteTransaction}
+                title="Excluir Transação"
+                message={
+                    <>
+                        Deseja realmente excluir a transação <strong>"{transactionToDelete?.description}"</strong>?
+                    </>
+                }
+            />
+
             <Footer />
         </div>
     );

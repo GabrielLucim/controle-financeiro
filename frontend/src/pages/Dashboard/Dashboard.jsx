@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import CreateWalletModal from "../../components/Wallet/CreateWalletModal";
+import DeleteConfirmModal from "../../components/Global/DeleteConfirmModal/DeleteConfirmModal";
 import { dashboardService } from "../../services/dashboardService";
 import { walletService } from "../../services/walletService";
 import { FaTrash } from "react-icons/fa";
@@ -21,6 +22,7 @@ function Dashboard() {
 
     const [wallets, setWallets] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [walletToDelete, setWalletToDelete] = useState(null);
 
     useEffect(() => {
         loadDashboard();
@@ -62,15 +64,17 @@ function Dashboard() {
         }
     };
 
-    const handleDeleteWallet = async (e, walletId, walletName) => {
+    const handleOpenDeleteModal = (e, wallet) => {
         e.stopPropagation();
+        setWalletToDelete(wallet);
+    };
 
-        if (!window.confirm(`Deseja realmente excluir a carteira "${walletName}"? Todas as transações vinculadas serão removidas.`)) {
-            return;
-        }
+    const handleConfirmDeleteWallet = async () => {
+        if (!walletToDelete) return;
 
         try {
-            await walletService.delete(walletId);
+            await walletService.delete(walletToDelete.id);
+            setWalletToDelete(null);
             await loadDashboard();
         } catch (error) {
             console.error("Erro ao excluir carteira:", error);
@@ -131,7 +135,7 @@ function Dashboard() {
                             <button
                                 className="delete-button"
                                 title="Excluir Carteira"
-                                onClick={(e) => handleDeleteWallet(e, wallet.id, wallet.name)}
+                                onClick={(e) => handleOpenDeleteModal(e, wallet)}
                                 style={{
                                     position: 'absolute',
                                     top: '16px',
@@ -168,6 +172,18 @@ function Dashboard() {
                 open={showModal}
                 onClose={() => setShowModal(false)}
                 onCreate={handleCreateWallet}
+            />
+
+            <DeleteConfirmModal
+                open={Boolean(walletToDelete)}
+                onClose={() => setWalletToDelete(null)}
+                onConfirm={handleConfirmDeleteWallet}
+                title="Excluir Carteira"
+                message={
+                    <>
+                        Deseja realmente excluir a carteira <strong>"{walletToDelete?.name}"</strong>? Todas as transações vinculadas serão removidas.
+                    </>
+                }
             />
 
             <Footer />
