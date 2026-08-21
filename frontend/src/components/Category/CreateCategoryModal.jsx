@@ -43,7 +43,6 @@ function CreateCategoryModal({ open, onClose, onSave, editingCategory }) {
         });
     };
 
-    // Focus Trap + Tecla ESC
     useEffect(() => {
         if (!open || !modalRef.current) return;
 

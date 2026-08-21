@@ -9,4 +9,5 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
 
     void deleteByUserId(Long userId);
 
+
 }

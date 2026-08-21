@@ -31,4 +31,7 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private boolean used;
 
+    @Column(nullable = false)
+    private boolean resetStarted;
+
 }

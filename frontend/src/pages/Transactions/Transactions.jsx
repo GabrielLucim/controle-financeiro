@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom"; // 👈 Adicionar import do useSearchParams
+import { useSearchParams } from "react-router-dom";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";

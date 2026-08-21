@@ -35,11 +35,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
 
             ErrorResponse error = ErrorResponse.builder()
-                            .timestamp(LocalDateTime.now())
-                            .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
-                            .error(HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase())
-                            .message(ex.getMessage())
-                            .build();
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
+                        .error(HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase())
+                        .message(ex.getMessage())
+                        .build();
 
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error);
     }
@@ -50,11 +50,11 @@ public class GlobalExceptionHandler {
     AccessDeniedException ex) {
     
     ErrorResponse error = ErrorResponse.builder()
-    .timestamp(LocalDateTime.now())
-    .status(HttpStatus.FORBIDDEN.value())
-    .error(HttpStatus.FORBIDDEN.getReasonPhrase())
-    .message("Acesso negado.")
-    .build();
+        .timestamp(LocalDateTime.now())
+        .status(HttpStatus.FORBIDDEN.value())
+        .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+        .message("Acesso negado.")
+        .build();
     
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     
@@ -101,11 +101,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
 
             ErrorResponse error = ErrorResponse.builder()
-                            .timestamp(LocalDateTime.now())
-                            .status(HttpStatus.UNAUTHORIZED.value())
-                            .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                            .message("E-mail ou senha inválidos.")
-                            .build();
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .message("E-mail ou senha inválidos.")
+                .build();
 
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }

@@ -22,14 +22,13 @@ public class CategoryService {
 
     public CategoryResponse create(CategoryRequest request, Long userId) {
 
-        User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        User owner = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 
         Category category = Category.builder()
-                .name(request.getName())
-                .type(request.getType())
-                .owner(owner)
-                .build();
+            .name(request.getName())
+            .type(request.getType())
+            .owner(owner)
+            .build();
 
         category = repository.save(category);
 
@@ -40,16 +39,15 @@ public class CategoryService {
     public List<CategoryResponse> findAllByUserId(Long userId) {
 
         return repository.findByOwnerId(userId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+            .stream()
+            .map(this::toResponse)
+            .toList();
 
     }
 
     public CategoryResponse findById(Long id, Long userId) {
 
-        Category category = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
+        Category category = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
 
         if (!category.getOwner().getId().equals(userId)) {
             throw new ResourceNotFoundException("Categoria não encontrada.");
@@ -61,8 +59,7 @@ public class CategoryService {
 
     public CategoryResponse update(Long id, CategoryRequest request, Long userId) {
 
-        Category category = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
+        Category category = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
 
         if (!category.getOwner().getId().equals(userId)) {
             throw new ResourceNotFoundException("Categoria não encontrada.");
@@ -79,8 +76,7 @@ public class CategoryService {
 
     public void delete(Long id, Long userId) {
 
-        Category category = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
+        Category category = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
 
         if (!category.getOwner().getId().equals(userId)) {
             throw new ResourceNotFoundException("Categoria não encontrada.");

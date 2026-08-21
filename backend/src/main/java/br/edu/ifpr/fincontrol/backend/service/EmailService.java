@@ -1,5 +1,6 @@
 package br.edu.ifpr.fincontrol.backend.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,9 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
 
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
     public void sendPasswordResetEmail(String to, String name, String resetLink) {
 
         try {
@@ -30,7 +34,7 @@ public class EmailService {
 
             helper.setSubject("Recuperação de Senha - FinControl");
             helper.setTo(to);
-            helper.setFrom("seu-email-real@gmail.com");
+            helper.setFrom(fromEmail, "FinControl");
             helper.setText(process, true);
 
             mailSender.send(mimeMessage);
