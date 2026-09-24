@@ -9,8 +9,11 @@ import br.edu.ifpr.fincontrol.backend.dto.request.WalletRequest;
 import br.edu.ifpr.fincontrol.backend.dto.response.WalletResponse;
 import br.edu.ifpr.fincontrol.backend.entity.User;
 import br.edu.ifpr.fincontrol.backend.entity.Wallet;
+import br.edu.ifpr.fincontrol.backend.entity.WalletMember;
+import br.edu.ifpr.fincontrol.backend.entity.enums.WalletRole;
 import br.edu.ifpr.fincontrol.backend.exception.ResourceNotFoundException;
 import br.edu.ifpr.fincontrol.backend.repository.UserRepository;
+import br.edu.ifpr.fincontrol.backend.repository.WalletMemberRepository;
 import br.edu.ifpr.fincontrol.backend.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -20,8 +23,10 @@ public class WalletService {
 
     private final WalletRepository walletRepository;
     private final UserRepository userRepository;
+    private final WalletMemberRepository walletMemberRepository;
 
     public WalletResponse create(WalletRequest request, Long userId) {
+
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 
@@ -33,21 +38,36 @@ public class WalletService {
 
         walletRepository.save(wallet);
 
+        WalletMember ownerMember = WalletMember.builder()
+                .wallet(wallet)
+                .user(owner)
+                .role(WalletRole.DONO)
+                .build();
+
+        walletMemberRepository.save(ownerMember);
+
         return toResponse(wallet);
     }
 
     public List<WalletResponse> findAllByUserId(Long userId) {
-        List<Wallet> wallets = walletRepository.findByOwnerId(userId);
+
+        List<Wallet> wallets = walletRepository.findDistinctByOwnerIdOrMembersUserId(userId, userId);
+
         return wallets.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     public WalletResponse findById(Long id, Long userId) {
+
         Wallet wallet = walletRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
 
-        if (!wallet.getOwner().getId().equals(userId)) {
+        boolean isOwner = wallet.getOwner().getId().equals(userId);
+
+        boolean isMember = walletMemberRepository.existsByWalletIdAndUserId(id, userId);
+
+        if (!isOwner && !isMember) {
             throw new ResourceNotFoundException("Carteira não encontrada.");
         }
 
@@ -55,6 +75,7 @@ public class WalletService {
     }
 
     public WalletResponse update(Long id, WalletRequest request, Long userId) {
+
         Wallet wallet = walletRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
 
@@ -71,6 +92,7 @@ public class WalletService {
     }
 
     public void delete(Long id, Long userId) {
+
         Wallet wallet = walletRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
 
@@ -82,10 +104,15 @@ public class WalletService {
     }
 
     private WalletResponse toResponse(Wallet wallet) {
+
         return WalletResponse.builder()
                 .id(wallet.getId())
                 .name(wallet.getName())
                 .description(wallet.getDescription())
+                .ownerId(wallet.getOwner().getId())
+                .ownerName(wallet.getOwner().getName())
+                .createdAt(wallet.getCreatedAt())
+                .updatedAt(wallet.getUpdatedAt())
                 .build();
     }
 }

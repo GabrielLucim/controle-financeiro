@@ -25,7 +25,7 @@ public class DashboardService {
 
     public DashboardResponse getDashboard(Long userId) {
 
-        List<Wallet> wallets = walletRepository.findByOwnerId(userId);
+        List<Wallet> wallets = walletRepository.findDistinctByOwnerIdOrMembersUserId(userId, userId);
 
         BigDecimal totalIncome = BigDecimal.ZERO;
         BigDecimal totalExpense = BigDecimal.ZERO;
@@ -50,7 +50,6 @@ public class DashboardService {
                 } else {
                     expense = expense.add(amount);
                 }
-
             }
 
             BigDecimal balance = income.subtract(expense);
@@ -65,7 +64,6 @@ public class DashboardService {
                             .description(wallet.getDescription())
                             .balance(balance)
                             .build());
-
         }
 
         SummaryResponse summary = SummaryResponse.builder()
@@ -78,7 +76,5 @@ public class DashboardService {
                 .summary(summary)
                 .wallets(walletResponses)
                 .build();
-
     }
-
 }
