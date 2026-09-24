@@ -11,6 +11,7 @@ import { authService } from "../../services/authService.js";
 const Login = () => {
     const navigate = useNavigate();
     const location = useLocation();
+
     const {
         login,
         loading,
@@ -30,46 +31,59 @@ const Login = () => {
 
     useEffect(() => {
         const remembered = localStorage.getItem("@FinControl:rememberMe");
+
         if (remembered) {
-            const parsed = JSON.parse(remembered);
-            setEmailOrUsername(parsed.emailOrUsername || "");
-            setPassword(parsed.password || "");
-            setRememberMe(true);
+            try {
+                const parsed = JSON.parse(remembered);
+
+                setEmailOrUsername(parsed.emailOrUsername || "");
+                setRememberMe(true);
+            } catch {
+                localStorage.removeItem("@FinControl:rememberMe");
+            }
         }
     }, []);
 
     const validateEmailOrUsername = (value) => {
         if (!value) return false;
+
         const isEmailFormat = value.includes("@");
+
         if (isEmailFormat) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(value);
-        } else {
-            return !value.includes(" ");
         }
+
+        return !value.includes(" ");
     };
 
     const handleEmailOrUsernameChange = (e) => {
         const value = e.target.value;
+
         setEmailOrUsername(value);
+
         if (emailOrUsernameError) {
             setEmailOrUsernameError(!validateEmailOrUsername(value));
         }
     };
 
     const handleEmailOrUsernameBlur = () => {
-        setEmailOrUsernameError(!validateEmailOrUsername(emailOrUsername));
+        setEmailOrUsernameError(
+            !validateEmailOrUsername(emailOrUsername)
+        );
     };
 
     const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
+        setShowPassword((previous) => !previous);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (isLoading) return;
 
-        const isEmailOrUsernameValid = validateEmailOrUsername(emailOrUsername);
+        const isEmailOrUsernameValid =
+            validateEmailOrUsername(emailOrUsername);
 
         if (!isEmailOrUsernameValid) {
             setEmailOrUsernameError(true);
@@ -78,7 +92,9 @@ const Login = () => {
         }
 
         if (!password || password.length < 8) {
-            setLoginError("A senha deve conter no mínimo 8 caracteres.");
+            setLoginError(
+                "A senha deve conter no mínimo 8 caracteres."
+            );
             return;
         }
 
@@ -87,26 +103,20 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-
             const response = await authService.login(
                 emailOrUsername,
                 password
             );
 
             if (rememberMe) {
-
                 localStorage.setItem(
                     "@FinControl:rememberMe",
                     JSON.stringify({
-                        emailOrUsername,
-                        password
+                        emailOrUsername
                     })
                 );
-
             } else {
-
                 localStorage.removeItem("@FinControl:rememberMe");
-
             }
 
             login(
@@ -119,25 +129,21 @@ const Login = () => {
             });
 
         } catch (error) {
-
             setLoginError(
                 error.response?.data?.message ||
                 "E-mail ou senha incorretos."
             );
-
         } finally {
-
             setIsLoading(false);
-
         }
     };
 
     useEffect(() => {
-
         if (!loading && isAuthenticated) {
-            navigate("/app/dashboard", { replace: true });
+            navigate("/app/dashboard", {
+                replace: true
+            });
         }
-
     }, [loading, isAuthenticated, navigate]);
 
     if (loading) {
@@ -150,20 +156,34 @@ const Login = () => {
 
             <main className="auth-container">
                 <div className="auth-card">
-                    <h2 className="auth-title">Acesse sua conta</h2>
+                    <h2 className="auth-title">
+                        Acesse sua conta
+                    </h2>
+
                     <p className="auth-subtitle">
                         Insira seus dados para entrar
                     </p>
 
-                    <form className="form" onSubmit={handleSubmit} noValidate>
+                    <form
+                        className="form"
+                        onSubmit={handleSubmit}
+                        noValidate
+                    >
                         <div className="input-group">
-                            <label className="form-label" htmlFor="emailOrUsername">
+                            <label
+                                className="form-label"
+                                htmlFor="emailOrUsername"
+                            >
                                 E-mail ou Usuário
                             </label>
+
                             <input
                                 type="text"
                                 id="emailOrUsername"
-                                className={`form-input ${emailOrUsernameError ? "input-error" : ""}`}
+                                className={`form-input ${emailOrUsernameError
+                                        ? "input-error"
+                                        : ""
+                                    }`}
                                 placeholder="seu@email.com ou seu_usuario"
                                 value={emailOrUsername}
                                 onChange={handleEmailOrUsernameChange}
@@ -172,55 +192,101 @@ const Login = () => {
                         </div>
 
                         <div className="input-group">
-                            <label className="form-label" htmlFor="password">
+                            <label
+                                className="form-label"
+                                htmlFor="password"
+                            >
                                 Senha
                             </label>
+
                             <div className="form-input-wrapper">
                                 <input
-                                    type={showPassword ? "text" : "password"}
+                                    type={
+                                        showPassword
+                                            ? "text"
+                                            : "password"
+                                    }
                                     id="password"
                                     className="form-input"
                                     placeholder="••••••••••"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
                                 />
+
                                 <span
                                     className="form-password-toggle"
                                     onClick={togglePasswordVisibility}
                                     role="button"
-                                    aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+                                    aria-label={
+                                        showPassword
+                                            ? "Esconder senha"
+                                            : "Mostrar senha"
+                                    }
                                 >
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                    {showPassword ? (
+                                        <FaEyeSlash />
+                                    ) : (
+                                        <FaEye />
+                                    )}
                                 </span>
                             </div>
+
                             <div className="auth-align-right">
-                                <Link to="/recuperar-senha" className="auth-link">
+                                <Link
+                                    to="/recuperar-senha"
+                                    className="auth-link"
+                                >
                                     Esqueceu sua senha?
                                 </Link>
                             </div>
                         </div>
 
                         <div className="form-options">
-                            <label className="form-checkbox-group" htmlFor="rememberMe">
+                            <label
+                                className="form-checkbox-group"
+                                htmlFor="rememberMe"
+                            >
                                 <input
                                     type="checkbox"
                                     id="rememberMe"
                                     checked={rememberMe}
-                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                    onChange={(e) =>
+                                        setRememberMe(
+                                            e.target.checked
+                                        )
+                                    }
                                 />
-                                <span className="form-label">Lembre de mim</span>
+
+                                <span className="form-label">
+                                    Lembre de mim
+                                </span>
                             </label>
                         </div>
 
-                        {loginError && <p className="form-error">{loginError}</p>}
+                        {loginError && (
+                            <p className="form-error">
+                                {loginError}
+                            </p>
+                        )}
 
-                        <button type="submit" className="form-button" disabled={isLoading}>
-                            {isLoading ? "Entrando..." : "Entrar"}
+                        <button
+                            type="submit"
+                            className="form-button"
+                            disabled={isLoading}
+                        >
+                            {isLoading
+                                ? "Entrando..."
+                                : "Entrar"}
                         </button>
 
                         <p className="auth-footer-text">
                             Ainda não tem uma conta?{" "}
-                            <Link className="auth-link" to="/cadastro">
+                            <Link
+                                className="auth-link"
+                                to="/cadastro"
+                            >
                                 Cadastre-se
                             </Link>
                         </p>
