@@ -38,6 +38,9 @@ public class User {
     private List<Wallet> wallets;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WalletMember> walletMemberships;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PasswordResetToken> passwordResetTokens;
 
     @PrePersist
@@ -50,5 +53,4 @@ public class User {
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 }
