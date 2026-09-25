@@ -10,6 +10,7 @@ import br.edu.ifpr.fincontrol.backend.entity.Category;
 import br.edu.ifpr.fincontrol.backend.entity.Transaction;
 import br.edu.ifpr.fincontrol.backend.entity.Wallet;
 import br.edu.ifpr.fincontrol.backend.entity.enums.WalletRole;
+import br.edu.ifpr.fincontrol.backend.exception.ForbiddenException;
 import br.edu.ifpr.fincontrol.backend.exception.ResourceNotFoundException;
 import br.edu.ifpr.fincontrol.backend.repository.CategoryRepository;
 import br.edu.ifpr.fincontrol.backend.repository.TransactionRepository;
@@ -33,7 +34,7 @@ public class TransactionService {
                 WalletRole role = walletMemberService.getUserRole(wallet.getId(), userId);
 
                 if (role == WalletRole.VISUALIZADOR) {
-                        throw new IllegalStateException(
+                        throw new ForbiddenException(
                                         "Usuário sem permissão para criar transações nesta carteira.");
                 }
 
@@ -91,7 +92,7 @@ public class TransactionService {
                                 userId);
 
                 if (role == WalletRole.VISUALIZADOR) {
-                        throw new IllegalStateException(
+                        throw new ForbiddenException(
                                         "Usuário sem permissão para editar transações nesta carteira.");
                 }
 
@@ -103,7 +104,7 @@ public class TransactionService {
                                 userId);
 
                 if (newWalletRole == WalletRole.VISUALIZADOR) {
-                        throw new IllegalStateException(
+                        throw new ForbiddenException(
                                         "Usuário sem permissão para utilizar esta carteira.");
                 }
 
@@ -136,7 +137,7 @@ public class TransactionService {
                                 userId);
 
                 if (role != WalletRole.DONO) {
-                        throw new IllegalStateException(
+                        throw new ForbiddenException(
                                         "Apenas o dono da carteira pode excluir transações.");
                 }
 
