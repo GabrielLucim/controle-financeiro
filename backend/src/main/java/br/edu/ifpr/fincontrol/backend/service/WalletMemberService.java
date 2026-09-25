@@ -75,7 +75,8 @@ public class WalletMemberService {
         }
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Usuário não encontrado."));
 
         if (walletMemberRepository.existsByWalletIdAndUserId(
                 walletId,
@@ -115,9 +116,9 @@ public class WalletMemberService {
                     "Não é possível transferir o papel de dono por esta operação.");
         }
 
-        WalletMember member = walletMemberRepository.findByWalletIdAndUserId(
-                walletId,
-                userId).orElseThrow(
+        WalletMember member = walletMemberRepository
+                .findByWalletIdAndUserId(walletId, userId)
+                .orElseThrow(
                         () -> new ResourceNotFoundException(
                                 "Membro não encontrado na carteira."));
 
@@ -141,20 +142,38 @@ public class WalletMemberService {
                     "O dono da carteira não pode ser removido.");
         }
 
-        WalletMember member = walletMemberRepository.findByWalletIdAndUserId(
-                walletId,
-                userId).orElseThrow(
+        WalletMember member = walletMemberRepository
+                .findByWalletIdAndUserId(walletId, userId)
+                .orElseThrow(
                         () -> new ResourceNotFoundException(
                                 "Membro não encontrado na carteira."));
 
         walletMemberRepository.delete(member);
     }
 
+    @Transactional(readOnly = true)
+    public WalletRole getUserRole(Long walletId, Long userId) {
+
+        Wallet wallet = findWallet(walletId);
+
+        if (wallet.getOwner().getId().equals(userId)) {
+            return WalletRole.DONO;
+        }
+
+        return walletMemberRepository
+                .findByWalletIdAndUserId(walletId, userId)
+                .map(WalletMember::getRole)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(
+                                "Carteira não encontrada."));
+    }
+
     private Wallet findWallet(Long walletId) {
 
         return walletRepository.findById(walletId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Carteira não encontrada."));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(
+                                "Carteira não encontrada."));
     }
 
     private void ensureOwner(Wallet wallet, Long userId) {
