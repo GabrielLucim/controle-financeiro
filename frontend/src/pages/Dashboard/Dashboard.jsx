@@ -5,9 +5,10 @@ import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import CreateWalletModal from "../../components/Wallet/CreateWalletModal";
 import DeleteConfirmModal from "../../components/Global/DeleteConfirmModal/DeleteConfirmModal";
+import WalletMembersModal from "../../components/WalletMembersModal/WalletMembersModal";
 import { dashboardService } from "../../services/dashboardService";
 import { walletService } from "../../services/walletService";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaUsers } from "react-icons/fa";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -23,6 +24,7 @@ function Dashboard() {
     const [wallets, setWallets] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [walletToDelete, setWalletToDelete] = useState(null);
+    const [walletToMembers, setWalletToMembers] = useState(null);
 
     useEffect(() => {
         loadDashboard();
@@ -69,6 +71,11 @@ function Dashboard() {
         setWalletToDelete(wallet);
     };
 
+    const handleOpenMembersModal = (e, wallet) => {
+        e.stopPropagation();
+        setWalletToMembers(wallet);
+    };
+
     const handleConfirmDeleteWallet = async () => {
         if (!walletToDelete) return;
 
@@ -89,12 +96,14 @@ function Dashboard() {
     return (
         <div className="dashboard-page">
             <Header />
+
             <main className="dashboard-content">
                 <div className="dashboard-header">
                     <div>
                         <h1 className="dashboard-title">
                             Olá, {user?.name || "Usuário"}
                         </h1>
+
                         <p className="dashboard-subtitle">
                             Visão geral das suas finanças.
                         </p>
@@ -103,21 +112,30 @@ function Dashboard() {
 
                 <section className="dashboard-summary">
                     <div className="summary-card">
-                        <span className="summary-label">Saldo Total</span>
+                        <span className="summary-label">
+                            Saldo Total
+                        </span>
+
                         <h2 className="summary-value positive">
                             R$ {summary.balance.toFixed(2)}
                         </h2>
                     </div>
 
                     <div className="summary-card">
-                        <span className="summary-label">Receitas</span>
+                        <span className="summary-label">
+                            Receitas
+                        </span>
+
                         <h2 className="summary-value positive">
                             R$ {summary.income.toFixed(2)}
                         </h2>
                     </div>
 
                     <div className="summary-card">
-                        <span className="summary-label">Despesas</span>
+                        <span className="summary-label">
+                            Despesas
+                        </span>
+
                         <h2 className="summary-value negative">
                             R$ {summary.expense.toFixed(2)}
                         </h2>
@@ -130,28 +148,48 @@ function Dashboard() {
                             key={wallet.id}
                             className="wallet-card"
                             onClick={() => openWallet(wallet.id)}
-                            style={{ position: 'relative' }}
+                            style={{ position: "relative" }}
                         >
                             <button
                                 className="delete-button"
                                 title="Excluir Carteira"
-                                onClick={(e) => handleOpenDeleteModal(e, wallet)}
+                                onClick={(e) =>
+                                    handleOpenDeleteModal(e, wallet)
+                                }
                                 style={{
-                                    position: 'absolute',
-                                    top: '16px',
-                                    right: '16px',
-                                    width: '32px',
-                                    height: '32px'
+                                    position: "absolute",
+                                    top: "16px",
+                                    right: "16px",
+                                    width: "32px",
+                                    height: "32px"
                                 }}
                             >
                                 <FaTrash size={12} />
                             </button>
 
+                            <button
+                                className="members-button"
+                                title="Gerenciar membros"
+                                onClick={(e) =>
+                                    handleOpenMembersModal(e, wallet)
+                                }
+                            >
+                                <FaUsers size={12} />
+                                <span>Membros</span>
+                            </button>
+
                             <h3>{wallet.name}</h3>
-                            <p>{wallet.description || "Sem descrição"}</p>
+
+                            <p>
+                                {wallet.description || "Sem descrição"}
+                            </p>
+
                             <div className="wallet-info">
                                 <span
-                                    className={`wallet-balance ${wallet.balance >= 0 ? "positive" : "negative"}`}
+                                    className={`wallet-balance ${wallet.balance >= 0
+                                            ? "positive"
+                                            : "negative"
+                                        }`}
                                 >
                                     Saldo: R$ {wallet.balance.toFixed(2)}
                                 </span>
@@ -181,9 +219,17 @@ function Dashboard() {
                 title="Excluir Carteira"
                 message={
                     <>
-                        Deseja realmente excluir a carteira <strong>"{walletToDelete?.name}"</strong>? Todas as transações vinculadas serão removidas.
+                        Deseja realmente excluir a carteira{" "}
+                        <strong>"{walletToDelete?.name}"</strong>? Todas as
+                        transações vinculadas serão removidas.
                     </>
                 }
+            />
+
+            <WalletMembersModal
+                open={Boolean(walletToMembers)}
+                wallet={walletToMembers}
+                onClose={() => setWalletToMembers(null)}
             />
 
             <Footer />
