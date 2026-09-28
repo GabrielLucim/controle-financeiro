@@ -1,8 +1,13 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { walletMemberService } from "../../services/walletMemberService";
 import "./WalletMembersModal.css";
 
 function WalletMembersModal({ open, wallet, onClose }) {
     const modalRef = useRef(null);
+
+    const [members, setMembers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         if (!open || !modalRef.current) return;
@@ -52,28 +57,33 @@ function WalletMembersModal({ open, wallet, onClose }) {
         };
     }, [open, onClose]);
 
-    if (!open) return null;
-
-    const members = [
-        {
-            userId: 1,
-            name: "Usuário dono",
-            email: "dono@email.com",
-            role: "DONO"
-        },
-        {
-            userId: 2,
-            name: "Usuário editor",
-            email: "editor@email.com",
-            role: "EDITOR"
-        },
-        {
-            userId: 3,
-            name: "Usuário visualizador",
-            email: "visualizador@email.com",
-            role: "VISUALIZADOR"
+    useEffect(() => {
+        if (!open || !wallet?.id) {
+            return;
         }
-    ];
+
+        const loadMembers = async () => {
+            try {
+                setLoading(true);
+                setError("");
+
+                const data = await walletMemberService.findAll(wallet.id);
+
+                setMembers(data);
+            } catch (err) {
+                console.error("Erro ao carregar membros da carteira:", err);
+
+                setMembers([]);
+                setError("Não foi possível carregar os membros da carteira.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadMembers();
+    }, [open, wallet?.id]);
+
+    if (!open) return null;
 
     return (
         <div
@@ -107,30 +117,50 @@ function WalletMembersModal({ open, wallet, onClose }) {
                 </div>
 
                 <div className="wallet-members-content">
-                    <div className="wallet-members-list">
-                        {members.map((member) => (
-                            <div
-                                className="wallet-member-item"
-                                key={member.userId}
-                            >
-                                <div className="wallet-member-info">
-                                    <strong>
-                                        {member.name}
-                                    </strong>
+                    {loading && (
+                        <div className="wallet-members-message">
+                            Carregando membros...
+                        </div>
+                    )}
 
-                                    <span>
-                                        {member.email}
+                    {!loading && error && (
+                        <div className="wallet-members-message wallet-members-error">
+                            {error}
+                        </div>
+                    )}
+
+                    {!loading && !error && members.length === 0 && (
+                        <div className="wallet-members-message">
+                            Nenhum membro encontrado.
+                        </div>
+                    )}
+
+                    {!loading && !error && members.length > 0 && (
+                        <div className="wallet-members-list">
+                            {members.map((member) => (
+                                <div
+                                    className="wallet-member-item"
+                                    key={member.userId}
+                                >
+                                    <div className="wallet-member-info">
+                                        <strong>
+                                            {member.name}
+                                        </strong>
+
+                                        <span>
+                                            {member.email}
+                                        </span>
+                                    </div>
+
+                                    <span
+                                        className={`wallet-member-role role-${member.role.toLowerCase()}`}
+                                    >
+                                        {member.role}
                                     </span>
                                 </div>
-
-                                <span
-                                    className={`wallet-member-role role-${member.role.toLowerCase()}`}
-                                >
-                                    {member.role}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
