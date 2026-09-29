@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { walletMemberService } from "../../services/walletMemberService";
+import AddWalletMemberModal from "../AddWalletMemberModal/AddWalletMemberModal";
 import "./WalletMembersModal.css";
 
 function WalletMembersModal({ open, wallet, onClose }) {
@@ -8,9 +9,10 @@ function WalletMembersModal({ open, wallet, onClose }) {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [addMemberOpen, setAddMemberOpen] = useState(false);
 
     useEffect(() => {
-        if (!open || !modalRef.current) return;
+        if (!open || addMemberOpen || !modalRef.current) return;
 
         const focusable = modalRef.current.querySelectorAll(
             'button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
@@ -42,11 +44,9 @@ function WalletMembersModal({ open, wallet, onClose }) {
                     event.preventDefault();
                     last.focus();
                 }
-            } else {
-                if (document.activeElement === last) {
-                    event.preventDefault();
-                    first.focus();
-                }
+            } else if (document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
             }
         };
 
@@ -55,7 +55,7 @@ function WalletMembersModal({ open, wallet, onClose }) {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [open, onClose]);
+    }, [open, addMemberOpen, onClose]);
 
     useEffect(() => {
         if (!open || !wallet?.id) {
@@ -83,87 +83,124 @@ function WalletMembersModal({ open, wallet, onClose }) {
         loadMembers();
     }, [open, wallet?.id]);
 
+    useEffect(() => {
+        if (!open) {
+            setAddMemberOpen(false);
+        }
+    }, [open]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+        };
+    }, [open]);
+
     if (!open) return null;
 
-    return (
-        <div
-            className="wallet-members-modal-overlay"
-            onClick={onClose}
-        >
-            <div
-                className="wallet-members-modal"
-                ref={modalRef}
-                onClick={(event) => event.stopPropagation()}
-            >
-                <div className="wallet-members-header">
-                    <div>
-                        <h2 className="wallet-members-title">
-                            Membros da Carteira
-                        </h2>
+    const handleAddMember = async (member) => {
+        console.log("Membro a adicionar:", member);
+    };
 
-                        <p className="wallet-members-wallet-name">
-                            {wallet?.name || "Carteira"}
-                        </p>
+    return (
+        <>
+            <div
+                className="wallet-members-modal-overlay"
+                onClick={onClose}
+            >
+                <div
+                    className="wallet-members-modal"
+                    ref={modalRef}
+                    onClick={(event) => event.stopPropagation()}
+                >
+                    <div className="wallet-members-header">
+                        <div>
+                            <h2 className="wallet-members-title">
+                                Membros da Carteira
+                            </h2>
+
+                            <p className="wallet-members-wallet-name">
+                                {wallet?.name || "Carteira"}
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="wallet-members-close"
+                            onClick={onClose}
+                            aria-label="Fechar"
+                        >
+                            ×
+                        </button>
                     </div>
 
-                    <button
-                        type="button"
-                        className="wallet-members-close"
-                        onClick={onClose}
-                        aria-label="Fechar"
-                    >
-                        ×
-                    </button>
-                </div>
+                    <div className="wallet-members-content">
+                        <button
+                            type="button"
+                            className="wallet-members-add"
+                            onClick={() => setAddMemberOpen(true)}
+                        >
+                            + Adicionar membro
+                        </button>
 
-                <div className="wallet-members-content">
-                    {loading && (
-                        <div className="wallet-members-message">
-                            Carregando membros...
-                        </div>
-                    )}
+                        {loading && (
+                            <div className="wallet-members-message">
+                                Carregando membros...
+                            </div>
+                        )}
 
-                    {!loading && error && (
-                        <div className="wallet-members-message wallet-members-error">
-                            {error}
-                        </div>
-                    )}
+                        {!loading && error && (
+                            <div className="wallet-members-message wallet-members-error">
+                                {error}
+                            </div>
+                        )}
 
-                    {!loading && !error && members.length === 0 && (
-                        <div className="wallet-members-message">
-                            Nenhum membro encontrado.
-                        </div>
-                    )}
+                        {!loading && !error && members.length === 0 && (
+                            <div className="wallet-members-message">
+                                Nenhum membro encontrado.
+                            </div>
+                        )}
 
-                    {!loading && !error && members.length > 0 && (
-                        <div className="wallet-members-list">
-                            {members.map((member) => (
-                                <div
-                                    className="wallet-member-item"
-                                    key={member.userId}
-                                >
-                                    <div className="wallet-member-info">
-                                        <strong>
-                                            {member.name}
-                                        </strong>
+                        {!loading && !error && members.length > 0 && (
+                            <div className="wallet-members-list">
+                                {members.map((member) => (
+                                    <div
+                                        className="wallet-member-item"
+                                        key={member.userId}
+                                    >
+                                        <div className="wallet-member-info">
+                                            <strong>
+                                                {member.name}
+                                            </strong>
 
-                                        <span>
-                                            {member.email}
+                                            <span>
+                                                {member.email}
+                                            </span>
+                                        </div>
+
+                                        <span
+                                            className={`wallet-member-role role-${member.role.toLowerCase()}`}
+                                        >
+                                            {member.role}
                                         </span>
                                     </div>
-
-                                    <span
-                                        className={`wallet-member-role role-${member.role.toLowerCase()}`}
-                                    >
-                                        {member.role}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <AddWalletMemberModal
+                open={addMemberOpen}
+                onClose={() => setAddMemberOpen(false)}
+                onAdd={handleAddMember}
+            />
+        </>
     );
 }
 
