@@ -116,7 +116,14 @@ function Dashboard() {
                             Saldo Total
                         </span>
 
-                        <h2 className="summary-value positive">
+                        <h2
+                            className={`summary-value ${summary.balance > 0
+                                    ? "positive"
+                                    : summary.balance < 0
+                                        ? "negative"
+                                        : "neutral"
+                                }`}
+                        >
                             R$ {summary.balance.toFixed(2)}
                         </h2>
                     </div>
