@@ -93,6 +93,20 @@ function Dashboard() {
         navigate(`/app/transacoes?walletId=${id}`);
     };
 
+    const handleWalletKeyDown = (e, walletId) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openWallet(walletId);
+        }
+    };
+
+    const handleNewWalletKeyDown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setShowModal(true);
+        }
+    };
+
     return (
         <div className="dashboard-page">
             <Header />
@@ -155,7 +169,10 @@ function Dashboard() {
                             key={wallet.id}
                             className="wallet-card"
                             onClick={() => openWallet(wallet.id)}
-                            style={{ position: "relative" }}
+                            tabIndex={0}
+                            onKeyDown={(e) =>
+                                handleWalletKeyDown(e, wallet.id)
+                            }
                         >
                             <button
                                 className="delete-button"
@@ -207,6 +224,10 @@ function Dashboard() {
                     <div
                         className="wallet-card add"
                         onClick={() => setShowModal(true)}
+                        tabIndex={0}
+                        role="button"
+                        aria-label="Criar nova carteira"
+                        onKeyDown={handleNewWalletKeyDown}
                     >
                         <span>+ Nova Carteira</span>
                     </div>
