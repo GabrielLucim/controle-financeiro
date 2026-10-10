@@ -8,5 +8,9 @@ import br.edu.ifpr.fincontrol.backend.entity.Wallet;
 
 public interface WalletRepository extends JpaRepository<Wallet, Long> {
 
-    List<Wallet> findDistinctByOwnerIdOrMembersUserId(Long ownerId, Long userId);
+    List<Wallet> findDistinctByOwnerIdOrMembersUserId(
+            Long ownerId,
+            Long userId);
+
+    boolean existsByOwnerId(Long ownerId);
 }
