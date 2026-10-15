@@ -162,9 +162,13 @@ export const ResetPassword = () => {
                     ) : error ? (
                         <div className="error-container">
                             <p className="form-error">{error}</p>
-                            <Link to="/esqueci-senha" className="auth-link" style={{ marginTop: "1rem", display: "inline-block" }}>
-                                Solicitar novo e-mail de recuperação
-                            </Link>
+                                    <Link
+                                        to="/recuperar-senha"
+                                        className="auth-link"
+                                        style={{ marginTop: "1rem", display: "inline-block" }}
+                                    >
+                                        Solicitar novo e-mail de recuperação
+                                    </Link>
                         </div>
                     ) : (
                         <form className="form" onSubmit={handleSubmit} noValidate>
