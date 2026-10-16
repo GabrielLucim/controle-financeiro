@@ -45,6 +45,7 @@
     margin: 8px 0 0;
     color: #9ca3af;
     font-size: 14px;
+    overflow-wrap: anywhere;
 }
 
 .wallet-members-close {
@@ -84,9 +85,14 @@
     transition: .2s;
 }
 
-.wallet-members-add:hover {
+.wallet-members-add:hover:not(:disabled) {
     background: rgba(108, 99, 255, .22);
     transform: translateY(-2px);
+}
+
+.wallet-members-add:disabled {
+    cursor: not-allowed;
+    opacity: .6;
 }
 
 .wallet-members-list {
@@ -118,6 +124,7 @@
     color: #fff;
     font-size: 15px;
     font-weight: 600;
+    overflow-wrap: anywhere;
 }
 
 .wallet-member-info span {
@@ -156,10 +163,48 @@
     text-align: center;
     color: #9ca3af;
     font-size: 14px;
+    overflow-wrap: anywhere;
 }
 
 .wallet-members-error {
     color: #f87171;
+}
+
+.wallet-member-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.wallet-member-action {
+    padding: 7px 12px;
+    border: 1px solid #454b5a;
+    border-radius: 8px;
+    background-color: #2b303c;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s ease;
+}
+
+.wallet-member-action:hover:not(:disabled) {
+    background-color: #383f4e;
+}
+
+.wallet-member-action:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.wallet-member-remove {
+    border-color: #9f414b;
+    color: #ff9ba4;
+}
+
+.wallet-member-remove:hover:not(:disabled) {
+    background-color: #492b33;
 }
 
 @keyframes walletMembersFadeIn {
@@ -197,6 +242,7 @@
         border-radius: 22px;
         padding: 24px;
     }
+
     .wallet-members-title {
         font-size: 24px;
     }
@@ -208,6 +254,15 @@
 
     .wallet-member-role {
         align-self: flex-start;
+    }
+
+    .wallet-member-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .wallet-member-action {
+        min-height: 36px;
     }
 }
 
@@ -227,5 +282,9 @@
 
     .wallet-member-item {
         padding: 14px;
+    }
+
+    .wallet-member-info {
+        width: 100%;
     }
 }
