@@ -191,6 +191,29 @@ body,
     font-weight: 500;
 }
 
+.captcha-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.captcha-description {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-text-secondary, #9ca3af);
+    text-align: left;
+}
+
+.turnstile-container {
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    justify-content: flex-start;
+}
+
 .form-button {
     width: 100%;
     padding: 18px;

@@ -35,6 +35,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordResetTokenRepository resetTokenRepository;
     private final EmailService emailService;
+    private final TurnstileService turnstileService;
 
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
@@ -57,6 +58,7 @@ public class AuthService {
         return toResponse(user);
     }
 
+    @Transactional(noRollbackFor = BusinessException.class)
     public LoginResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
@@ -70,18 +72,35 @@ public class AuthService {
         if (activeReset != null
                 && activeReset.isResetStarted()
                 && activeReset.getExpiresAt().isAfter(LocalDateTime.now())) {
-
             throw new BusinessException(
                     "Existe uma recuperação de senha em andamento. "
                             + "Defina uma nova senha antes de fazer login.");
         }
 
+        int failedAttempts = user.getFailedLoginAttempts() == null
+                ? 0
+                : user.getFailedLoginAttempts();
+
+        if (failedAttempts >= 3
+                && !turnstileService.isValid(request.getCaptchaToken())) {
+            throw new BusinessException("CAPTCHA_REQUIRED");
+        }
+
         if (!passwordEncoder.matches(
                 request.getPassword(), user.getPassword())) {
 
-            throw new BusinessException(
-                    "E-mail ou senha inválidos.");
+            user.setFailedLoginAttempts(failedAttempts + 1);
+            userRepository.save(user);
+
+            if (user.getFailedLoginAttempts() >= 3) {
+                throw new BusinessException("CAPTCHA_REQUIRED");
+            }
+
+            throw new BusinessException("E-mail ou senha inválidos.");
         }
+
+        user.setFailedLoginAttempts(0);
+        userRepository.save(user);
 
         String token = jwtService.generateToken(user);
 
@@ -127,7 +146,6 @@ public class AuthService {
         PasswordResetToken resetToken = findValidResetToken(token);
 
         resetToken.setResetStarted(true);
-
         resetTokenRepository.save(resetToken);
     }
 
@@ -142,18 +160,15 @@ public class AuthService {
                 passwordEncoder.encode(request.getNewPassword()));
 
         userRepository.save(user);
-
         resetTokenRepository.delete(resetToken);
     }
 
     private PasswordResetToken findValidResetToken(String token) {
 
         if (token == null || token.isBlank()) {
-            throw new BusinessException(
-                    "Token inválido ou expirado.");
+            throw new BusinessException("Token inválido ou expirado.");
         }
 
-        // A busca utiliza o hash, nunca o token original.
         PasswordResetToken resetToken = resetTokenRepository
                 .findByToken(hashToken(token))
                 .orElseThrow(() -> new BusinessException(
@@ -161,9 +176,7 @@ public class AuthService {
 
         if (resetToken.isUsed()
                 || !resetToken.getExpiresAt().isAfter(LocalDateTime.now())) {
-
-            throw new BusinessException(
-                    "Token inválido ou expirado.");
+            throw new BusinessException("Token inválido ou expirado.");
         }
 
         return resetToken;

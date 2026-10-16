@@ -28,6 +28,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer failedLoginAttempts = 0;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

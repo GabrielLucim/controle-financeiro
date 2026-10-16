@@ -2,12 +2,13 @@ import api from "./api";
 
 export const authService = {
 
-    async login(email, password) {
-
+    async login(email, password, captchaToken = null) {
         const response = await api.post("/auth/login", {
             email,
-            password
+            password,
+            captchaToken
         });
+
         return response.data;
     },
 
