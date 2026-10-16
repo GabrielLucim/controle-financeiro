@@ -23,188 +23,206 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WalletMemberService {
 
-    private final WalletMemberRepository walletMemberRepository;
-    private final WalletRepository walletRepository;
-    private final UserRepository userRepository;
+        private final WalletMemberRepository walletMemberRepository;
+        private final WalletRepository walletRepository;
+        private final UserRepository userRepository;
+        private final EmailService emailService;
 
-    @Transactional(readOnly = true)
-    public List<WalletMemberResponse> findAll(Long walletId, Long currentUserId) {
+        @Transactional(readOnly = true)
+        public List<WalletMemberResponse> findAll(Long walletId, Long currentUserId) {
 
-        Wallet wallet = findWallet(walletId);
+                Wallet wallet = findWallet(walletId);
 
-        ensureMember(wallet, currentUserId);
+                ensureMember(wallet, currentUserId);
 
-        List<WalletMemberResponse> members = walletMemberRepository.findByWalletId(wallet.getId())
-                .stream()
-                .map(this::toResponse)
-                .collect(java.util.stream.Collectors.toList());
+                List<WalletMemberResponse> members = walletMemberRepository.findByWalletId(wallet.getId())
+                                .stream()
+                                .map(this::toResponse)
+                                .collect(java.util.stream.Collectors.toList());
 
-        boolean ownerAlreadyListed = members.stream()
-                .anyMatch(member -> member.getUserId().equals(wallet.getOwner().getId()));
+                boolean ownerAlreadyListed = members.stream()
+                                .anyMatch(member -> member.getUserId().equals(wallet.getOwner().getId()));
 
-        if (!ownerAlreadyListed) {
+                if (!ownerAlreadyListed) {
 
-            User owner = wallet.getOwner();
+                        User owner = wallet.getOwner();
 
-            members.add(
-                    0,
-                    WalletMemberResponse.builder()
-                            .userId(owner.getId())
-                            .name(owner.getName())
-                            .email(owner.getEmail())
-                            .role(WalletRole.DONO)
-                            .build());
+                        members.add(
+                                        0,
+                                        WalletMemberResponse.builder()
+                                                        .userId(owner.getId())
+                                                        .name(owner.getName())
+                                                        .email(owner.getEmail())
+                                                        .role(WalletRole.DONO)
+                                                        .build());
+                }
+
+                return members;
         }
 
-        return members;
-    }
+        @Transactional
+        public WalletMemberResponse add(
+                        Long walletId,
+                        AddWalletMemberRequest request,
+                        Long currentUserId) {
 
-    @Transactional
-    public WalletMemberResponse add(
-            Long walletId,
-            AddWalletMemberRequest request,
-            Long currentUserId) {
+                Wallet wallet = findWallet(walletId);
 
-        Wallet wallet = findWallet(walletId);
+                ensureOwner(wallet, currentUserId);
 
-        ensureOwner(wallet, currentUserId);
+                if (request.getRole() == WalletRole.DONO) {
+                        throw new BusinessException(
+                                        "Não é possível adicionar outro dono à carteira.");
+                }
 
-        if (request.getRole() == WalletRole.DONO) {
-            throw new BusinessException(
-                    "Não é possível adicionar outro dono à carteira.");
+                User user = userRepository.findByEmail(request.getEmail())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Usuário não encontrado."));
+
+                if (walletMemberRepository.existsByWalletIdAndUserId(
+                                walletId,
+                                user.getId())) {
+
+                        throw new BusinessException(
+                                        "O usuário já participa desta carteira.");
+                }
+
+                WalletMember member = WalletMember.builder()
+                                .wallet(wallet)
+                                .user(user)
+                                .role(request.getRole())
+                                .build();
+
+                WalletMember savedMember = walletMemberRepository.save(member);
+
+                emailService.sendWalletMemberAddedEmail(
+                                user.getEmail(),
+                                user.getName(),
+                                wallet.getOwner().getName(),
+                                wallet.getName(),
+                                formatRole(request.getRole()));
+
+                return toResponse(savedMember);
         }
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Usuário não encontrado."));
+        @Transactional
+        public WalletMemberResponse update(
+                        Long walletId,
+                        Long userId,
+                        UpdateWalletMemberRequest request,
+                        Long currentUserId) {
 
-        if (walletMemberRepository.existsByWalletIdAndUserId(
-                walletId,
-                user.getId())) {
+                Wallet wallet = findWallet(walletId);
 
-            throw new BusinessException(
-                    "O usuário já participa desta carteira.");
+                ensureOwner(wallet, currentUserId);
+
+                if (userId.equals(wallet.getOwner().getId())) {
+                        throw new BusinessException(
+                                        "O dono da carteira não pode ter o papel alterado.");
+                }
+
+                if (request.getRole() == WalletRole.DONO) {
+                        throw new BusinessException(
+                                        "Não é possível transferir o papel de dono por esta operação.");
+                }
+
+                WalletMember member = walletMemberRepository
+                                .findByWalletIdAndUserId(walletId, userId)
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException(
+                                                                "Membro não encontrado na carteira."));
+
+                member.setRole(request.getRole());
+
+                return toResponse(walletMemberRepository.save(member));
         }
 
-        WalletMember member = WalletMember.builder()
-                .wallet(wallet)
-                .user(user)
-                .role(request.getRole())
-                .build();
+        @Transactional
+        public void remove(
+                        Long walletId,
+                        Long userId,
+                        Long currentUserId) {
 
-        return toResponse(walletMemberRepository.save(member));
-    }
+                Wallet wallet = findWallet(walletId);
 
-    @Transactional
-    public WalletMemberResponse update(
-            Long walletId,
-            Long userId,
-            UpdateWalletMemberRequest request,
-            Long currentUserId) {
+                ensureOwner(wallet, currentUserId);
 
-        Wallet wallet = findWallet(walletId);
+                if (userId.equals(wallet.getOwner().getId())) {
+                        throw new BusinessException(
+                                        "O dono da carteira não pode ser removido.");
+                }
 
-        ensureOwner(wallet, currentUserId);
+                WalletMember member = walletMemberRepository
+                                .findByWalletIdAndUserId(walletId, userId)
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException(
+                                                                "Membro não encontrado na carteira."));
 
-        if (userId.equals(wallet.getOwner().getId())) {
-            throw new BusinessException(
-                    "O dono da carteira não pode ter o papel alterado.");
+                walletMemberRepository.delete(member);
         }
 
-        if (request.getRole() == WalletRole.DONO) {
-            throw new BusinessException(
-                    "Não é possível transferir o papel de dono por esta operação.");
+        @Transactional(readOnly = true)
+        public WalletRole getUserRole(Long walletId, Long userId) {
+
+                Wallet wallet = findWallet(walletId);
+
+                if (wallet.getOwner().getId().equals(userId)) {
+                        return WalletRole.DONO;
+                }
+
+                return walletMemberRepository
+                                .findByWalletIdAndUserId(walletId, userId)
+                                .map(WalletMember::getRole)
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException(
+                                                                "Carteira não encontrada."));
         }
 
-        WalletMember member = walletMemberRepository
-                .findByWalletIdAndUserId(walletId, userId)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException(
-                                "Membro não encontrado na carteira."));
+        private Wallet findWallet(Long walletId) {
 
-        member.setRole(request.getRole());
-
-        return toResponse(walletMemberRepository.save(member));
-    }
-
-    @Transactional
-    public void remove(
-            Long walletId,
-            Long userId,
-            Long currentUserId) {
-
-        Wallet wallet = findWallet(walletId);
-
-        ensureOwner(wallet, currentUserId);
-
-        if (userId.equals(wallet.getOwner().getId())) {
-            throw new BusinessException(
-                    "O dono da carteira não pode ser removido.");
+                return walletRepository.findById(walletId)
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException(
+                                                                "Carteira não encontrada."));
         }
 
-        WalletMember member = walletMemberRepository
-                .findByWalletIdAndUserId(walletId, userId)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException(
-                                "Membro não encontrado na carteira."));
+        private void ensureOwner(Wallet wallet, Long userId) {
 
-        walletMemberRepository.delete(member);
-    }
-
-    @Transactional(readOnly = true)
-    public WalletRole getUserRole(Long walletId, Long userId) {
-
-        Wallet wallet = findWallet(walletId);
-
-        if (wallet.getOwner().getId().equals(userId)) {
-            return WalletRole.DONO;
+                if (!wallet.getOwner().getId().equals(userId)) {
+                        throw new ResourceNotFoundException(
+                                        "Carteira não encontrada.");
+                }
         }
 
-        return walletMemberRepository
-                .findByWalletIdAndUserId(walletId, userId)
-                .map(WalletMember::getRole)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException(
-                                "Carteira não encontrada."));
-    }
+        private void ensureMember(Wallet wallet, Long userId) {
 
-    private Wallet findWallet(Long walletId) {
+                boolean isOwner = wallet.getOwner().getId().equals(userId);
 
-        return walletRepository.findById(walletId)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException(
-                                "Carteira não encontrada."));
-    }
+                boolean isMember = walletMemberRepository.existsByWalletIdAndUserId(
+                                wallet.getId(),
+                                userId);
 
-    private void ensureOwner(Wallet wallet, Long userId) {
-
-        if (!wallet.getOwner().getId().equals(userId)) {
-            throw new ResourceNotFoundException(
-                    "Carteira não encontrada.");
+                if (!isOwner && !isMember) {
+                        throw new ResourceNotFoundException(
+                                        "Carteira não encontrada.");
+                }
         }
-    }
 
-    private void ensureMember(Wallet wallet, Long userId) {
-
-        boolean isOwner = wallet.getOwner().getId().equals(userId);
-
-        boolean isMember = walletMemberRepository.existsByWalletIdAndUserId(
-                wallet.getId(),
-                userId);
-
-        if (!isOwner && !isMember) {
-            throw new ResourceNotFoundException(
-                    "Carteira não encontrada.");
+        private String formatRole(WalletRole role) {
+                return switch (role) {
+                        case EDITOR -> "Editor";
+                        case VISUALIZADOR -> "Visualizador";
+                        case DONO -> "Dono";
+                };
         }
-    }
 
-    private WalletMemberResponse toResponse(WalletMember member) {
+        private WalletMemberResponse toResponse(WalletMember member) {
 
-        return WalletMemberResponse.builder()
-                .userId(member.getUser().getId())
-                .name(member.getUser().getName())
-                .email(member.getUser().getEmail())
-                .role(member.getRole())
-                .build();
-    }
+                return WalletMemberResponse.builder()
+                                .userId(member.getUser().getId())
+                                .name(member.getUser().getName())
+                                .email(member.getUser().getEmail())
+                                .role(member.getRole())
+                                .build();
+        }
 }

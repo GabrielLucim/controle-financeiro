@@ -55,6 +55,10 @@ public class AuthService {
 
         user = userRepository.save(user);
 
+        emailService.sendWelcomeEmail(
+                user.getEmail(),
+                user.getName());
+
         return toResponse(user);
     }
 
