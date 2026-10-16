@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -17,15 +18,13 @@ const Login = () => {
 
     const { login, loading, isAuthenticated } = useAuth();
 
-    const [emailOrUsername, setEmailOrUsername] = useState(
-        location.state?.email || ""
-    );
+    const [email, setEmail] = useState(location.state?.email || "");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [loginError, setLoginError] = useState("");
-    const [emailOrUsernameError, setEmailOrUsernameError] = useState(false);
+    const [emailError, setEmailError] = useState(false);
     const [showCaptcha, setShowCaptcha] = useState(false);
     const [captchaToken, setCaptchaToken] = useState("");
     const [captchaError, setCaptchaError] = useState("");
@@ -39,7 +38,7 @@ const Login = () => {
         if (remembered) {
             try {
                 const parsed = JSON.parse(remembered);
-                setEmailOrUsername(parsed.emailOrUsername || "");
+                setEmail(parsed.email || parsed.emailOrUsername || "");
                 setRememberMe(true);
             } catch {
                 localStorage.removeItem("@FinControl:rememberMe");
@@ -136,32 +135,24 @@ const Login = () => {
         };
     }, [showCaptcha]);
 
-    const validateEmailOrUsername = (value) => {
+    const validateEmail = (value) => {
         if (!value) return false;
 
-        const isEmailFormat = value.includes("@");
-
-        if (isEmailFormat) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(value);
-        }
-
-        return !value.includes(" ");
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value.trim());
     };
 
-    const handleEmailOrUsernameChange = (e) => {
-        const value = e.target.value;
-        setEmailOrUsername(value);
+    const handleEmailChange = (event) => {
+        const value = event.target.value;
+        setEmail(value);
 
-        if (emailOrUsernameError) {
-            setEmailOrUsernameError(!validateEmailOrUsername(value));
+        if (emailError) {
+            setEmailError(!validateEmail(value));
         }
     };
 
-    const handleEmailOrUsernameBlur = () => {
-        setEmailOrUsernameError(
-            !validateEmailOrUsername(emailOrUsername)
-        );
+    const handleEmailBlur = () => {
+        setEmailError(!validateEmail(email));
     };
 
     const togglePasswordVisibility = () => {
@@ -180,17 +171,16 @@ const Login = () => {
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
         if (isLoading) return;
 
-        const isEmailOrUsernameValid =
-            validateEmailOrUsername(emailOrUsername);
+        const isEmailValid = validateEmail(email);
 
-        if (!isEmailOrUsernameValid) {
-            setEmailOrUsernameError(true);
-            setLoginError("Formato de e-mail ou usuário inválido.");
+        if (!isEmailValid) {
+            setEmailError(true);
+            setLoginError("Informe um e-mail válido.");
             return;
         }
 
@@ -206,13 +196,13 @@ const Login = () => {
             return;
         }
 
-        setEmailOrUsernameError(false);
+        setEmailError(false);
         setLoginError("");
         setIsLoading(true);
 
         try {
             const response = await authService.login(
-                emailOrUsername,
+                email,
                 password,
                 captchaToken || null
             );
@@ -220,7 +210,7 @@ const Login = () => {
             if (rememberMe) {
                 localStorage.setItem(
                     "@FinControl:rememberMe",
-                    JSON.stringify({ emailOrUsername })
+                    JSON.stringify({ email })
                 );
             } else {
                 localStorage.removeItem("@FinControl:rememberMe");
@@ -231,8 +221,7 @@ const Login = () => {
             navigate("/app/dashboard", { replace: true });
         } catch (error) {
             const message = error.response?.data?.message || "";
-            const requiresCaptcha =
-                message.includes("CAPTCHA_REQUIRED");
+            const requiresCaptcha = message.includes("CAPTCHA_REQUIRED");
 
             if (requiresCaptcha) {
                 setShowCaptcha(true);
@@ -281,20 +270,20 @@ const Login = () => {
                         <div className="input-group">
                             <label
                                 className="form-label"
-                                htmlFor="emailOrUsername"
+                                htmlFor="email"
                             >
-                                E-mail ou Usuário
+                                E-mail
                             </label>
 
                             <input
-                                type="text"
-                                id="emailOrUsername"
-                                className={`form-input ${emailOrUsernameError ? "input-error" : ""
+                                type="email"
+                                id="email"
+                                className={`form-input ${emailError ? "input-error" : ""
                                     }`}
-                                placeholder="seu@email.com ou seu_usuario"
-                                value={emailOrUsername}
-                                onChange={handleEmailOrUsernameChange}
-                                onBlur={handleEmailOrUsernameBlur}
+                                placeholder="seu@email.com"
+                                value={email}
+                                onChange={handleEmailChange}
+                                onBlur={handleEmailBlur}
                             />
                         </div>
 
@@ -310,8 +299,8 @@ const Login = () => {
                                     className="form-input"
                                     placeholder="••••••••••"
                                     value={password}
-                                    onChange={(e) =>
-                                        setPassword(e.target.value)
+                                    onChange={(event) =>
+                                        setPassword(event.target.value)
                                     }
                                 />
 
@@ -320,12 +309,12 @@ const Login = () => {
                                     onClick={togglePasswordVisibility}
                                     role="button"
                                     tabIndex={0}
-                                    onKeyDown={(e) => {
+                                    onKeyDown={(event) => {
                                         if (
-                                            e.key === "Enter" ||
-                                            e.key === " "
+                                            event.key === "Enter" ||
+                                            event.key === " "
                                         ) {
-                                            e.preventDefault();
+                                            event.preventDefault();
                                             togglePasswordVisibility();
                                         }
                                     }}
@@ -358,8 +347,8 @@ const Login = () => {
                                     type="checkbox"
                                     id="rememberMe"
                                     checked={rememberMe}
-                                    onChange={(e) =>
-                                        setRememberMe(e.target.checked)
+                                    onChange={(event) =>
+                                        setRememberMe(event.target.checked)
                                     }
                                 />
 

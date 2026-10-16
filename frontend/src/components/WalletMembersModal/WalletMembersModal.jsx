@@ -103,7 +103,29 @@ function WalletMembersModal({ open, wallet, onClose }) {
     if (!open) return null;
 
     const handleAddMember = async (member) => {
-        console.log("Membro a adicionar:", member);
+        if (!wallet?.id) {
+            throw new Error("Não foi possível identificar a carteira.");
+        }
+
+        try {
+            const addedMember = await walletMemberService.add(wallet.id, member);
+
+            setMembers((currentMembers) => {
+                const withoutDuplicate = currentMembers.filter(
+                    (currentMember) => currentMember.userId !== addedMember.userId
+                );
+
+                return [...withoutDuplicate, addedMember];
+            });
+
+            setError("");
+        } catch (err) {
+            const message =
+                err.response?.data?.message ||
+                "Não foi possível adicionar o membro à carteira.";
+
+            throw new Error(message);
+        }
     };
 
     return (
@@ -173,13 +195,8 @@ function WalletMembersModal({ open, wallet, onClose }) {
                                         key={member.userId}
                                     >
                                         <div className="wallet-member-info">
-                                            <strong>
-                                                {member.name}
-                                            </strong>
-
-                                            <span>
-                                                {member.email}
-                                            </span>
+                                            <strong>{member.name}</strong>
+                                            <span>{member.email}</span>
                                         </div>
 
                                         <span

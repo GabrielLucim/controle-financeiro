@@ -8,6 +8,7 @@ function AddWalletMemberModal({ open, onClose, onAdd }) {
     const [email, setEmail] = useState("");
     const [role, setRole] = useState("EDITOR");
     const [emailError, setEmailError] = useState("");
+    const [formError, setFormError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
@@ -61,6 +62,7 @@ function AddWalletMemberModal({ open, onClose, onAdd }) {
             setEmail("");
             setRole("EDITOR");
             setEmailError("");
+            setFormError("");
             setSubmitting(false);
         }
     }, [open]);
@@ -83,6 +85,7 @@ function AddWalletMemberModal({ open, onClose, onAdd }) {
         const value = event.target.value;
 
         setEmail(value);
+        setFormError("");
 
         if (emailError) {
             setEmailError(validateEmail(value));
@@ -101,6 +104,7 @@ function AddWalletMemberModal({ open, onClose, onAdd }) {
 
         try {
             setSubmitting(true);
+            setFormError("");
 
             await onAdd({
                 email: email.trim(),
@@ -110,10 +114,20 @@ function AddWalletMemberModal({ open, onClose, onAdd }) {
             setEmail("");
             setRole("EDITOR");
             setEmailError("");
+            setFormError("");
 
             onClose();
         } catch (error) {
-            console.error("Erro ao adicionar membro:", error);
+            const message =
+                error.message || "Não foi possível adicionar o membro.";
+
+            if (message.toLowerCase().includes("usuário não encontrado")) {
+                setEmailError(
+                    "Não existe uma conta FinControl cadastrada com esse e-mail."
+                );
+            } else {
+                setFormError(message);
+            }
         } finally {
             setSubmitting(false);
         }
@@ -191,16 +205,22 @@ function AddWalletMemberModal({ open, onClose, onAdd }) {
                                 }
                                 disabled={submitting}
                             >
-                                <option value="EDITOR">
-                                    Editor
-                                </option>
-
+                                <option value="EDITOR">Editor</option>
                                 <option value="VISUALIZADOR">
                                     Visualizador
                                 </option>
                             </select>
                         </div>
                     </div>
+
+                    {formError && (
+                        <p
+                            className="add-wallet-member-error add-wallet-member-form-error"
+                            role="alert"
+                        >
+                            {formError}
+                        </p>
+                    )}
 
                     <div className="add-wallet-member-footer">
                         <button
