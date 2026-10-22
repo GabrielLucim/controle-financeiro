@@ -62,6 +62,7 @@ public class DashboardService {
                             .id(wallet.getId())
                             .name(wallet.getName())
                             .description(wallet.getDescription())
+                            .ownerId(wallet.getOwner().getId())
                             .balance(balance)
                             .build());
         }

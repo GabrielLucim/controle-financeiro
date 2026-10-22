@@ -12,7 +12,7 @@ import { FaTrash, FaUsers } from "react-icons/fa";
 import "./Dashboard.css";
 
 function Dashboard() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [summary, setSummary] = useState({
@@ -164,62 +164,78 @@ function Dashboard() {
                 </section>
 
                 <section className="wallet-grid">
-                    {wallets.map(wallet => (
-                        <div
-                            key={wallet.id}
-                            className="wallet-card"
-                            onClick={() => openWallet(wallet.id)}
-                            tabIndex={0}
-                            onKeyDown={(e) =>
-                                handleWalletKeyDown(e, wallet.id)
-                            }
-                        >
-                            <button
-                                className="delete-button"
-                                title="Excluir Carteira"
-                                onClick={(e) =>
-                                    handleOpenDeleteModal(e, wallet)
-                                }
-                                style={{
-                                    position: "absolute",
-                                    top: "16px",
-                                    right: "16px",
-                                    width: "32px",
-                                    height: "32px"
-                                }}
-                            >
-                                <FaTrash size={12} />
-                            </button>
+                    {wallets.map(wallet => {
+                        const isOwner =
+                            wallet.ownerId != null &&
+                            user?.id != null &&
+                            String(wallet.ownerId) === String(user.id);
 
-                            <button
-                                className="members-button"
-                                title="Gerenciar membros"
-                                onClick={(e) =>
-                                    handleOpenMembersModal(e, wallet)
+                        return (
+                            <div
+                                key={wallet.id}
+                                className="wallet-card"
+                                onClick={() => openWallet(wallet.id)}
+                                tabIndex={0}
+                                onKeyDown={(e) =>
+                                    handleWalletKeyDown(e, wallet.id)
                                 }
                             >
-                                <FaUsers size={12} />
-                                <span>Membros</span>
-                            </button>
+                                {isOwner && (
+                                    <button
+                                        type="button"
+                                        className="delete-button"
+                                        title="Excluir Carteira"
+                                        aria-label={`Excluir carteira ${wallet.name}`}
+                                        onClick={(e) =>
+                                            handleOpenDeleteModal(e, wallet)
+                                        }
+                                        style={{
+                                            position: "absolute",
+                                            top: "16px",
+                                            right: "16px",
+                                            width: "32px",
+                                            height: "32px"
+                                        }}
+                                    >
+                                        <FaTrash size={12} />
+                                    </button>
+                                )}
 
-                            <h3>{wallet.name}</h3>
-
-                            <p>
-                                {wallet.description || "Sem descrição"}
-                            </p>
-
-                            <div className="wallet-info">
-                                <span
-                                    className={`wallet-balance ${wallet.balance >= 0
-                                            ? "positive"
-                                            : "negative"
-                                        }`}
+                                <button
+                                    type="button"
+                                    className="members-button"
+                                    title={
+                                        isOwner
+                                            ? "Gerenciar membros"
+                                            : "Ver membros"
+                                    }
+                                    onClick={(e) =>
+                                        handleOpenMembersModal(e, wallet)
+                                    }
                                 >
-                                    Saldo: R$ {wallet.balance.toFixed(2)}
-                                </span>
+                                    <FaUsers size={12} />
+                                    <span>Membros</span>
+                                </button>
+
+                                <h3>{wallet.name}</h3>
+
+                                <p>
+                                    {wallet.description || "Sem descrição"}
+                                </p>
+
+                                <div className="wallet-info">
+                                    <span
+                                        className={`wallet-balance ${wallet.balance >= 0
+                                                ? "positive"
+                                                : "negative"
+                                            }`}
+                                    >
+                                        Saldo: R$ {wallet.balance.toFixed(2)}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
 
                     <div
                         className="wallet-card add"
@@ -257,6 +273,11 @@ function Dashboard() {
             <WalletMembersModal
                 open={Boolean(walletToMembers)}
                 wallet={walletToMembers}
+                canManageMembers={
+                    walletToMembers?.ownerId != null &&
+                    user?.id != null &&
+                    String(walletToMembers.ownerId) === String(user.id)
+                }
                 onClose={() => setWalletToMembers(null)}
             />
 

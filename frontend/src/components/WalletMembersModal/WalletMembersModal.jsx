@@ -15,7 +15,12 @@ function getActionError(err, fallback) {
     return message || fallback;
 }
 
-function WalletMembersModal({ open, wallet, onClose }) {
+function WalletMembersModal({
+    open,
+    wallet,
+    canManageMembers = false,
+    onClose
+}) {
     const modalRef = useRef(null);
 
     const [members, setMembers] = useState([]);
@@ -29,7 +34,13 @@ function WalletMembersModal({ open, wallet, onClose }) {
     const [removingMemberId, setRemovingMemberId] = useState(null);
 
     useEffect(() => {
-        if (!open || addMemberOpen || editingMember || removingMember || !modalRef.current) {
+        if (
+            !open ||
+            addMemberOpen ||
+            editingMember ||
+            removingMember ||
+            !modalRef.current
+        ) {
             return;
         }
 
@@ -49,11 +60,11 @@ function WalletMembersModal({ open, wallet, onClose }) {
 
             if (event.key !== "Tab") return;
 
-            const currentFocusable = modalRef.current.querySelectorAll(
+            const currentFocusable = modalRef.current?.querySelectorAll(
                 'button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
             );
 
-            if (currentFocusable.length === 0) return;
+            if (!currentFocusable || currentFocusable.length === 0) return;
 
             const first = currentFocusable[0];
             const last = currentFocusable[currentFocusable.length - 1];
@@ -61,7 +72,10 @@ function WalletMembersModal({ open, wallet, onClose }) {
             if (event.shiftKey && document.activeElement === first) {
                 event.preventDefault();
                 last.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
+            } else if (
+                !event.shiftKey &&
+                document.activeElement === last
+            ) {
                 event.preventDefault();
                 first.focus();
             }
@@ -72,7 +86,13 @@ function WalletMembersModal({ open, wallet, onClose }) {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [open, addMemberOpen, editingMember, removingMember, onClose]);
+    }, [
+        open,
+        addMemberOpen,
+        editingMember,
+        removingMember,
+        onClose
+    ]);
 
     useEffect(() => {
         if (!open || !wallet?.id) {
@@ -121,16 +141,24 @@ function WalletMembersModal({ open, wallet, onClose }) {
     if (!open) return null;
 
     const handleAddMember = async (member) => {
+        if (!canManageMembers) {
+            throw new Error("Você não tem permissão para gerenciar os membros desta carteira.");
+        }
+
         if (!wallet?.id) {
             throw new Error("Não foi possível identificar a carteira.");
         }
 
         try {
-            const addedMember = await walletMemberService.add(wallet.id, member);
+            const addedMember = await walletMemberService.add(
+                wallet.id,
+                member
+            );
 
             setMembers((currentMembers) => {
                 const withoutDuplicate = currentMembers.filter(
-                    (currentMember) => currentMember.userId !== addedMember.userId
+                    (currentMember) =>
+                        currentMember.userId !== addedMember.userId
                 );
 
                 return [...withoutDuplicate, addedMember];
@@ -141,13 +169,16 @@ function WalletMembersModal({ open, wallet, onClose }) {
         } catch (err) {
             throw new Error(
                 err.response?.data?.message ||
+                err.message ||
                 "Não foi possível adicionar o membro à carteira."
             );
         }
     };
 
     const handleSaveRole = async (role) => {
-        if (!wallet?.id || !editingMember) return;
+        if (!canManageMembers || !wallet?.id || !editingMember) {
+            return;
+        }
 
         try {
             setSavingRole(true);
@@ -181,7 +212,9 @@ function WalletMembersModal({ open, wallet, onClose }) {
     };
 
     const handleRemoveMember = async () => {
-        if (!wallet?.id || !removingMember) return;
+        if (!canManageMembers || !wallet?.id || !removingMember) {
+            return;
+        }
 
         try {
             setRemovingMemberId(removingMember.userId);
@@ -206,8 +239,6 @@ function WalletMembersModal({ open, wallet, onClose }) {
                     "Não foi possível remover o membro da carteira."
                 )
             );
-
-            setRemovingMember(null);
         } finally {
             setRemovingMemberId(null);
         }
@@ -246,19 +277,24 @@ function WalletMembersModal({ open, wallet, onClose }) {
                     </div>
 
                     <div className="wallet-members-content">
-                        <button
-                            type="button"
-                            className="wallet-members-add"
-                            onClick={() => {
-                                setActionError("");
-                                setAddMemberOpen(true);
-                            }}
-                        >
-                            + Adicionar membro
-                        </button>
+                        {canManageMembers && (
+                            <button
+                                type="button"
+                                className="wallet-members-add"
+                                onClick={() => {
+                                    setActionError("");
+                                    setAddMemberOpen(true);
+                                }}
+                            >
+                                + Adicionar membro
+                            </button>
+                        )}
 
                         {actionError && (
-                            <div className="wallet-members-message wallet-members-error">
+                            <div
+                                className="wallet-members-message wallet-members-error"
+                                role="alert"
+                            >
                                 {actionError}
                             </div>
                         )}
@@ -270,7 +306,10 @@ function WalletMembersModal({ open, wallet, onClose }) {
                         )}
 
                         {!loading && error && (
-                            <div className="wallet-members-message wallet-members-error">
+                            <div
+                                className="wallet-members-message wallet-members-error"
+                                role="alert"
+                            >
                                 {error}
                             </div>
                         )}
@@ -303,7 +342,7 @@ function WalletMembersModal({ open, wallet, onClose }) {
                                                     {member.role}
                                                 </span>
 
-                                                {!isOwner && (
+                                                {canManageMembers && !isOwner && (
                                                     <>
                                                         <button
                                                             type="button"
@@ -313,6 +352,7 @@ function WalletMembersModal({ open, wallet, onClose }) {
                                                                 setEditingMember(member);
                                                             }}
                                                             disabled={
+                                                                savingRole ||
                                                                 removingMemberId === member.userId
                                                             }
                                                         >
@@ -327,6 +367,7 @@ function WalletMembersModal({ open, wallet, onClose }) {
                                                                 setRemovingMember(member);
                                                             }}
                                                             disabled={
+                                                                savingRole ||
                                                                 removingMemberId === member.userId
                                                             }
                                                         >
@@ -344,39 +385,43 @@ function WalletMembersModal({ open, wallet, onClose }) {
                 </div>
             </div>
 
-            <AddWalletMemberModal
-                open={addMemberOpen}
-                onClose={() => setAddMemberOpen(false)}
-                onAdd={handleAddMember}
-            />
+            {canManageMembers && (
+                <>
+                    <AddWalletMemberModal
+                        open={addMemberOpen}
+                        onClose={() => setAddMemberOpen(false)}
+                        onAdd={handleAddMember}
+                    />
 
-            <EditWalletMemberModal
-                open={Boolean(editingMember)}
-                member={editingMember}
-                onClose={() => {
-                    if (!savingRole) {
-                        setEditingMember(null);
-                        setActionError("");
-                    }
-                }}
-                onSave={handleSaveRole}
-                saving={savingRole}
-                error={actionError}
-            />
+                    <EditWalletMemberModal
+                        open={Boolean(editingMember)}
+                        member={editingMember}
+                        onClose={() => {
+                            if (!savingRole) {
+                                setEditingMember(null);
+                                setActionError("");
+                            }
+                        }}
+                        onSave={handleSaveRole}
+                        saving={savingRole}
+                        error={actionError}
+                    />
 
-            <ConfirmRemoveWalletMemberModal
-                open={Boolean(removingMember)}
-                member={removingMember}
-                onClose={() => {
-                    if (removingMemberId === null) {
-                        setRemovingMember(null);
-                        setActionError("");
-                    }
-                }}
-                onConfirm={handleRemoveMember}
-                removing={removingMemberId !== null}
-                error={actionError}
-            />
+                    <ConfirmRemoveWalletMemberModal
+                        open={Boolean(removingMember)}
+                        member={removingMember}
+                        onClose={() => {
+                            if (removingMemberId === null) {
+                                setRemovingMember(null);
+                                setActionError("");
+                            }
+                        }}
+                        onConfirm={handleRemoveMember}
+                        removing={removingMemberId !== null}
+                        error={actionError}
+                    />
+                </>
+            )}
         </>
     );
 }
