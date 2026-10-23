@@ -46,15 +46,16 @@ public class WalletService {
 
         walletMemberRepository.save(ownerMember);
 
-        return toResponse(wallet);
+        return toResponse(wallet, userId);
     }
 
     public List<WalletResponse> findAllByUserId(Long userId) {
 
-        List<Wallet> wallets = walletRepository.findDistinctByOwnerIdOrMembersUserId(userId, userId);
+        List<Wallet> wallets = walletRepository
+                .findDistinctByOwnerIdOrMembersUserId(userId, userId);
 
         return wallets.stream()
-                .map(this::toResponse)
+                .map(wallet -> toResponse(wallet, userId))
                 .collect(Collectors.toList());
     }
 
@@ -64,14 +65,13 @@ public class WalletService {
                 .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
 
         boolean isOwner = wallet.getOwner().getId().equals(userId);
-
         boolean isMember = walletMemberRepository.existsByWalletIdAndUserId(id, userId);
 
         if (!isOwner && !isMember) {
             throw new ResourceNotFoundException("Carteira não encontrada.");
         }
 
-        return toResponse(wallet);
+        return toResponse(wallet, userId);
     }
 
     public WalletResponse update(Long id, WalletRequest request, Long userId) {
@@ -88,7 +88,7 @@ public class WalletService {
 
         walletRepository.save(wallet);
 
-        return toResponse(wallet);
+        return toResponse(wallet, userId);
     }
 
     public void delete(Long id, Long userId) {
@@ -103,7 +103,7 @@ public class WalletService {
         walletRepository.delete(wallet);
     }
 
-    private WalletResponse toResponse(Wallet wallet) {
+    private WalletResponse toResponse(Wallet wallet, Long userId) {
 
         return WalletResponse.builder()
                 .id(wallet.getId())
@@ -111,8 +111,22 @@ public class WalletService {
                 .description(wallet.getDescription())
                 .ownerId(wallet.getOwner().getId())
                 .ownerName(wallet.getOwner().getName())
+                .currentUserRole(getCurrentUserRole(wallet, userId))
                 .createdAt(wallet.getCreatedAt())
                 .updatedAt(wallet.getUpdatedAt())
                 .build();
+    }
+
+    private WalletRole getCurrentUserRole(Wallet wallet, Long userId) {
+
+        if (wallet.getOwner().getId().equals(userId)) {
+            return WalletRole.DONO;
+        }
+
+        return walletMemberRepository
+                .findByWalletIdAndUserId(wallet.getId(), userId)
+                .map(WalletMember::getRole)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Carteira não encontrada."));
     }
 }

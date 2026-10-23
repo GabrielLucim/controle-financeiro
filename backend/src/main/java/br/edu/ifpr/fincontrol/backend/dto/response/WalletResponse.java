@@ -2,6 +2,7 @@ package br.edu.ifpr.fincontrol.backend.dto.response;
 
 import java.time.LocalDateTime;
 
+import br.edu.ifpr.fincontrol.backend.entity.enums.WalletRole;
 import lombok.*;
 
 @Getter
@@ -21,8 +22,9 @@ public class WalletResponse {
 
     private String ownerName;
 
+    private WalletRole currentUserRole;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
 }
