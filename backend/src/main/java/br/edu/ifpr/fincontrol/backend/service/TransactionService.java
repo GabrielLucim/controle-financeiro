@@ -29,7 +29,8 @@ public class TransactionService {
         public TransactionResponse create(TransactionRequest request, Long userId) {
 
                 Wallet wallet = walletRepository.findById(request.getWalletId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException("Carteira não encontrada."));
 
                 WalletRole role = walletMemberService.getUserRole(wallet.getId(), userId);
 
@@ -38,12 +39,11 @@ public class TransactionService {
                                         "Usuário sem permissão para criar transações nesta carteira.");
                 }
 
-                Category category = categoryRepository.findById(request.getCategoryId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
-
-                if (!category.getOwner().getId().equals(userId)) {
-                        throw new ResourceNotFoundException("Categoria não encontrada.");
-                }
+                Category category = findCategoryForWallet(
+                                request.getCategoryId(),
+                                wallet,
+                                null,
+                                false);
 
                 Transaction transaction = Transaction.builder()
                                 .description(request.getDescription())
@@ -61,7 +61,8 @@ public class TransactionService {
 
         public List<TransactionResponse> findAllByUserId(Long userId) {
 
-                return repository.findDistinctByWalletOwnerIdOrWalletMembersUserId(userId, userId)
+                return repository
+                                .findDistinctByWalletOwnerIdOrWalletMembersUserId(userId, userId)
                                 .stream()
                                 .map(this::toResponse)
                                 .toList();
@@ -70,7 +71,8 @@ public class TransactionService {
         public TransactionResponse findById(Long id, Long userId) {
 
                 Transaction transaction = repository.findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException("Transação não encontrada."));
 
                 walletMemberService.getUserRole(
                                 transaction.getWallet().getId(),
@@ -85,7 +87,8 @@ public class TransactionService {
                         Long userId) {
 
                 Transaction transaction = repository.findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException("Transação não encontrada."));
 
                 WalletRole role = walletMemberService.getUserRole(
                                 transaction.getWallet().getId(),
@@ -97,7 +100,8 @@ public class TransactionService {
                 }
 
                 Wallet wallet = walletRepository.findById(request.getWalletId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException("Carteira não encontrada."));
 
                 WalletRole newWalletRole = walletMemberService.getUserRole(
                                 wallet.getId(),
@@ -108,12 +112,13 @@ public class TransactionService {
                                         "Usuário sem permissão para utilizar esta carteira.");
                 }
 
-                Category category = categoryRepository.findById(request.getCategoryId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
+                boolean sameWallet = transaction.getWallet().getId().equals(wallet.getId());
 
-                if (!category.getOwner().getId().equals(userId)) {
-                        throw new ResourceNotFoundException("Categoria não encontrada.");
-                }
+                Category category = findCategoryForWallet(
+                                request.getCategoryId(),
+                                wallet,
+                                transaction.getCategory().getId(),
+                                sameWallet);
 
                 transaction.setDescription(request.getDescription());
                 transaction.setAmount(request.getAmount());
@@ -130,7 +135,8 @@ public class TransactionService {
         public void delete(Long id, Long userId) {
 
                 Transaction transaction = repository.findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException("Transação não encontrada."));
 
                 WalletRole role = walletMemberService.getUserRole(
                                 transaction.getWallet().getId(),
@@ -142,6 +148,34 @@ public class TransactionService {
                 }
 
                 repository.delete(transaction);
+        }
+
+        private Category findCategoryForWallet(
+                        Long categoryId,
+                        Wallet wallet,
+                        Long existingCategoryId,
+                        boolean allowKeepingExistingCategory) {
+
+                Category category = categoryRepository.findById(categoryId)
+                                .orElseThrow(
+                                                () -> new ResourceNotFoundException("Categoria não encontrada."));
+
+                try {
+                        walletMemberService.getUserRole(
+                                        wallet.getId(),
+                                        category.getOwner().getId());
+                } catch (ResourceNotFoundException exception) {
+
+                        boolean keepingExistingCategory = allowKeepingExistingCategory
+                                        && existingCategoryId != null
+                                        && existingCategoryId.equals(category.getId());
+
+                        if (!keepingExistingCategory) {
+                                throw new ResourceNotFoundException("Categoria não encontrada.");
+                        }
+                }
+
+                return category;
         }
 
         private TransactionResponse toResponse(Transaction transaction) {

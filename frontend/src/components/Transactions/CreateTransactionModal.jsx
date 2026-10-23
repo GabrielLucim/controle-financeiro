@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { categoryService } from "../../services/categoryService";
 import "./CreateTransactionModal.css";
 
 function CreateTransactionModal({
@@ -16,6 +17,8 @@ function CreateTransactionModal({
     const [value, setValue] = useState("");
     const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
     const [error, setError] = useState("");
+    const [availableCategories, setAvailableCategories] = useState(categories);
+    const [categoryLoading, setCategoryLoading] = useState(false);
 
     const modalRef = useRef(null);
 
@@ -27,22 +30,79 @@ function CreateTransactionModal({
         setValue("");
         setDate(new Date().toISOString().split("T")[0]);
         setError("");
+        setAvailableCategories(categories);
     };
 
     useEffect(() => {
         if (!open) return;
 
+        setError("");
+
         if (editingTransaction) {
-            setWalletId(editingTransaction.walletId || "");
-            setCategoryId(editingTransaction.categoryId || "");
+            setWalletId(String(editingTransaction.walletId || ""));
+            setCategoryId(String(editingTransaction.categoryId || ""));
             setDescription(editingTransaction.description || "");
             setType(editingTransaction.type?.toUpperCase() || "EXPENSE");
             setValue(editingTransaction.amount || editingTransaction.value || "");
-            setDate(editingTransaction.date || new Date().toISOString().split("T")[0]);
+            setDate(
+                editingTransaction.date ||
+                new Date().toISOString().split("T")[0]
+            );
         } else {
             resetFields();
         }
     }, [editingTransaction, open]);
+
+    useEffect(() => {
+        if (!open || !walletId) {
+            setAvailableCategories(categories);
+            setCategoryLoading(false);
+            return;
+        }
+
+        let cancelled = false;
+
+        async function loadWalletCategories() {
+            try {
+                setCategoryLoading(true);
+                setError("");
+
+                const data = await categoryService.getAll(walletId);
+
+                if (!cancelled) {
+                    setAvailableCategories(data);
+                }
+            } catch (err) {
+                console.error(
+                    "Erro ao carregar categorias da carteira:",
+                    err
+                );
+
+                if (!cancelled) {
+                    setAvailableCategories([]);
+                    setError(
+                        "Não foi possível carregar as categorias desta carteira."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setCategoryLoading(false);
+                }
+            }
+        }
+
+        loadWalletCategories();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [open, walletId]);
+
+    const handleWalletChange = (nextWalletId) => {
+        setWalletId(nextWalletId);
+        setCategoryId("");
+        setError("");
+    };
 
     const handleClose = () => {
         resetFields();
@@ -51,6 +111,11 @@ function CreateTransactionModal({
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (categoryLoading) {
+            setError("Aguarde o carregamento das categorias.");
+            return;
+        }
 
         if (!walletId) {
             setError("Selecione uma carteira.");
@@ -78,7 +143,7 @@ function CreateTransactionModal({
             description: description.trim(),
             type: type.toUpperCase(),
             amount: Number(value),
-            date: date
+            date
         });
 
         resetFields();
@@ -94,6 +159,7 @@ function CreateTransactionModal({
         };
 
         const focusableElements = getFocusableElements();
+
         if (focusableElements.length > 0) {
             setTimeout(() => {
                 focusableElements[0].focus();
@@ -108,21 +174,21 @@ function CreateTransactionModal({
 
             if (e.key === "Tab") {
                 const currentFocusable = getFocusableElements();
+
                 if (currentFocusable.length === 0) return;
 
                 const first = currentFocusable[0];
                 const last = currentFocusable[currentFocusable.length - 1];
 
-                if (e.shiftKey) {
-                    if (document.activeElement === first) {
-                        e.preventDefault();
-                        last.focus();
-                    }
-                } else {
-                    if (document.activeElement === last) {
-                        e.preventDefault();
-                        first.focus();
-                    }
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (
+                    !e.shiftKey &&
+                    document.activeElement === last
+                ) {
+                    e.preventDefault();
+                    first.focus();
                 }
             }
         };
@@ -136,6 +202,27 @@ function CreateTransactionModal({
 
     if (!open) return null;
 
+    const categoryExists = availableCategories.some(
+        (category) => String(category.id) === String(categoryId)
+    );
+
+    const keepingExistingCategory =
+        editingTransaction
+        && Number(walletId) === Number(editingTransaction.walletId)
+        && editingTransaction.categoryId
+        && String(editingTransaction.categoryId) === String(categoryId)
+        && !categoryExists;
+
+    const categoriesForSelect = keepingExistingCategory
+        ? [
+            {
+                id: editingTransaction.categoryId,
+                name: editingTransaction.categoryName || "Categoria atual"
+            },
+            ...availableCategories
+        ]
+        : availableCategories;
+
     return (
         <div className="transaction-modal-overlay" onClick={handleClose}>
             <div
@@ -143,52 +230,73 @@ function CreateTransactionModal({
                 ref={modalRef}
                 onClick={(e) => e.stopPropagation()}
             >
-                <h2>{editingTransaction ? "Editar Transação" : "Nova Transação"}</h2>
+                <h2>
+                    {editingTransaction ? "Editar Transação" : "Nova Transação"}
+                </h2>
 
                 <form onSubmit={handleSubmit}>
                     <div className="transaction-group">
-                        <label>Carteira</label>
+                        <label htmlFor="transaction-wallet">Carteira</label>
+
                         <select
+                            id="transaction-wallet"
                             value={walletId}
-                            onChange={(e) => setWalletId(e.target.value)}
+                            onChange={(e) => handleWalletChange(e.target.value)}
+                            required
                         >
                             <option value="">Selecione uma carteira</option>
-                            {wallets.map((w) => (
-                                <option key={w.id} value={w.id}>
-                                    {w.name}
+
+                            {wallets.map((wallet) => (
+                                <option key={wallet.id} value={wallet.id}>
+                                    {wallet.name}
                                 </option>
                             ))}
                         </select>
                     </div>
 
                     <div className="transaction-group">
-                        <label>Descrição</label>
+                        <label htmlFor="transaction-description">Descrição</label>
+
                         <input
+                            id="transaction-description"
                             type="text"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Ex: Supermercado"
+                            maxLength={150}
+                            required
                         />
                     </div>
 
                     <div className="transaction-group">
-                        <label>Categoria</label>
+                        <label htmlFor="transaction-category">Categoria</label>
+
                         <select
+                            id="transaction-category"
                             value={categoryId}
                             onChange={(e) => setCategoryId(e.target.value)}
+                            disabled={!walletId || categoryLoading}
+                            required
                         >
-                            <option value="">Selecione uma categoria</option>
-                            {categories.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                    {c.name}
+                            <option value="">
+                                {categoryLoading
+                                    ? "Carregando categorias..."
+                                    : "Selecione uma categoria"}
+                            </option>
+
+                            {categoriesForSelect.map((category) => (
+                                <option key={category.id} value={category.id}>
+                                    {category.name}
                                 </option>
                             ))}
                         </select>
                     </div>
 
                     <div className="transaction-group">
-                        <label>Tipo</label>
+                        <label htmlFor="transaction-type">Tipo</label>
+
                         <select
+                            id="transaction-type"
                             value={type}
                             onChange={(e) => setType(e.target.value)}
                         >
@@ -198,33 +306,55 @@ function CreateTransactionModal({
                     </div>
 
                     <div className="transaction-group">
-                        <label>Valor (R$)</label>
+                        <label htmlFor="transaction-value">Valor (R$)</label>
+
                         <input
+                            id="transaction-value"
                             type="number"
                             step="0.01"
+                            min="0.01"
                             value={value}
                             onChange={(e) => setValue(e.target.value)}
                             placeholder="0.00"
+                            required
                         />
                     </div>
 
                     <div className="transaction-group">
-                        <label>Data</label>
+                        <label htmlFor="transaction-date">Data</label>
+
                         <input
+                            id="transaction-date"
                             type="date"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
+                            required
                         />
                     </div>
 
-                    {error && <p className="transaction-error">{error}</p>}
+                    {error && (
+                        <p className="transaction-error" role="alert">
+                            {error}
+                        </p>
+                    )}
 
                     <div className="transaction-buttons">
-                        <button type="button" className="cancel" onClick={handleClose}>
+                        <button
+                            type="button"
+                            className="cancel"
+                            onClick={handleClose}
+                        >
                             Cancelar
                         </button>
-                        <button type="submit" className="create">
-                            {editingTransaction ? "Salvar Alterações" : "Criar"}
+
+                        <button
+                            type="submit"
+                            className="create"
+                            disabled={categoryLoading}
+                        >
+                            {editingTransaction
+                                ? "Salvar Alterações"
+                                : "Criar"}
                         </button>
                     </div>
                 </form>
