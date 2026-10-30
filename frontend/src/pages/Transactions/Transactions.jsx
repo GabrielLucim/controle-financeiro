@@ -6,6 +6,7 @@ import Footer from "../../components/Global/Footer/Footer";
 import CreateTransactionModal from "../../components/Transactions/CreateTransactionModal";
 import DeleteConfirmModal from "../../components/Global/DeleteConfirmModal/DeleteConfirmModal";
 import { transactionService } from "../../services/transactionService";
+import { transactionEventService } from "../../services/transactionEventService";
 import { walletService } from "../../services/walletService";
 import { categoryService } from "../../services/categoryService";
 import "./Transactions.css";
@@ -24,6 +25,7 @@ function Transactions() {
     const [editingTransaction, setEditingTransaction] = useState(null);
     const [transactionToDelete, setTransactionToDelete] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [connectionStatus, setConnectionStatus] = useState("connecting");
 
     useEffect(() => {
         if (walletIdFromUrl) {
@@ -33,6 +35,33 @@ function Transactions() {
 
     useEffect(() => {
         loadData();
+    }, []);
+
+    useEffect(() => {
+        let isActive = true;
+
+        const unsubscribe = transactionEventService.subscribe(
+            async () => {
+                try {
+                    const transData = await transactionService.getAll();
+
+                    if (isActive) {
+                        setTransactions(transData);
+                    }
+                } catch (error) {
+                    console.error(
+                        "Erro ao atualizar transações em tempo real:",
+                        error
+                    );
+                }
+            },
+            setConnectionStatus
+        );
+
+        return () => {
+            isActive = false;
+            unsubscribe();
+        };
     }, []);
 
     async function loadData() {
@@ -182,15 +211,35 @@ function Transactions() {
                         </p>
                     </div>
 
-                    {writableWallets.length > 0 && (
-                        <button
-                            type="button"
-                            className="transactions-button"
-                            onClick={handleOpenCreateModal}
+                    <div className="transactions-header-actions">
+                        <div
+                            className={`transactions-connection-status ${connectionStatus}`}
+                            role="status"
+                            aria-live="polite"
                         >
-                            + Nova Transação
-                        </button>
-                    )}
+                            <span className="transactions-connection-indicator" />
+
+                            <span>
+                                {{
+                                    connecting: "Conectando ao tempo real...",
+                                    connected: "Atualizações em tempo real ativas",
+                                    reconnecting: "Reconectando ao tempo real...",
+                                    "authentication-error": "Sessão expirada. Entre novamente.",
+                                    "connection-error": "Conexão em tempo real indisponível. Recarregue a página."
+                                }[connectionStatus] || "Conexão em tempo real indisponível."}
+                            </span>
+                        </div>
+
+                        {writableWallets.length > 0 && (
+                            <button
+                                type="button"
+                                className="transactions-button"
+                                onClick={handleOpenCreateModal}
+                            >
+                                + Nova Transação
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <section className="transactions-toolbar">

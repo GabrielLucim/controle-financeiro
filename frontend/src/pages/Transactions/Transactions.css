@@ -200,6 +200,48 @@
     transform: translateY(-2px);
 }
 
+.transactions-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+}
+
+.transactions-connection-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #9ca3af;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.transactions-connection-indicator {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 9px;
+    border-radius: 50%;
+    background: #9ca3af;
+}
+
+.transactions-connection-status.connected .transactions-connection-indicator {
+    background: #22c55e;
+}
+
+.transactions-connection-status.reconnecting .transactions-connection-indicator {
+    background: #f59e0b;
+}
+
+.transactions-connection-status.authentication-error,
+.transactions-connection-status.connection-error {
+    color: #f87171;
+}
+
+.transactions-connection-status.authentication-error .transactions-connection-indicator,
+.transactions-connection-status.connection-error .transactions-connection-indicator {
+    background: #ef4444;
+}
+
 @media (max-width: 768px) {
     .transactions-content {
         margin: 24px auto;
@@ -231,5 +273,15 @@
 
     .transaction-actions {
         justify-content: center;
+    }
+
+    .transactions-header-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .transactions-connection-status {
+        align-self: flex-start;
+        white-space: normal;
     }
 }
