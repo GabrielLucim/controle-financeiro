@@ -1,9 +1,12 @@
 package br.edu.ifpr.fincontrol.backend.controller;
 
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,7 @@ import br.edu.ifpr.fincontrol.backend.security.UserDetailsImpl;
 import br.edu.ifpr.fincontrol.backend.service.TransactionEventsService;
 import br.edu.ifpr.fincontrol.backend.service.TransactionService;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -44,11 +48,28 @@ public class TransactionController {
 
     }
 
-    @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter stream(
+    @PostMapping("/stream-ticket")
+    public ResponseEntity<Map<String, String>> createStreamTicket(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        return eventsService.register(userDetails.getUser().getId());
+        String ticket = eventsService.createTicket(userDetails.getUser().getId());
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(Map.of("ticket", ticket));
+
+    }
+
+    @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(
+            @RequestParam("ticket") String ticket,
+            HttpServletResponse response) {
+
+        response.setHeader("Cache-Control", "no-store");
+
+        Long userId = eventsService.consumeTicket(ticket);
+
+        return eventsService.register(userId);
 
     }
 
