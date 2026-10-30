@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Global/Header/Header";
@@ -7,6 +7,7 @@ import CreateWalletModal from "../../components/Wallet/CreateWalletModal";
 import DeleteConfirmModal from "../../components/Global/DeleteConfirmModal/DeleteConfirmModal";
 import WalletMembersModal from "../../components/WalletMembersModal/WalletMembersModal";
 import { dashboardService } from "../../services/dashboardService";
+import { transactionEventService } from "../../services/transactionEventService";
 import { walletService } from "../../services/walletService";
 import { FaTrash, FaUsers } from "react-icons/fa";
 import "./Dashboard.css";
@@ -26,11 +27,7 @@ function Dashboard() {
     const [walletToDelete, setWalletToDelete] = useState(null);
     const [walletToMembers, setWalletToMembers] = useState(null);
 
-    useEffect(() => {
-        loadDashboard();
-    }, []);
-
-    async function loadDashboard() {
+    const loadDashboard = useCallback(async () => {
         try {
             const data = await dashboardService.getDashboard();
 
@@ -49,7 +46,31 @@ function Dashboard() {
         } catch (error) {
             console.error("Erro ao carregar dashboard:", error);
         }
-    }
+    }, []);
+
+    useEffect(() => {
+        loadDashboard();
+
+        let wasDisconnected = false;
+
+        const unsubscribe = transactionEventService.subscribe(
+            () => {
+                loadDashboard();
+            },
+            (status) => {
+                if (status === "reconnecting") {
+                    wasDisconnected = true;
+                }
+
+                if (status === "connected" && wasDisconnected) {
+                    wasDisconnected = false;
+                    loadDashboard();
+                }
+            }
+        );
+
+        return unsubscribe;
+    }, [loadDashboard]);
 
     const handleCreateWallet = async (walletData) => {
         try {
@@ -132,10 +153,10 @@ function Dashboard() {
 
                         <h2
                             className={`summary-value ${summary.balance > 0
-                                    ? "positive"
-                                    : summary.balance < 0
-                                        ? "negative"
-                                        : "neutral"
+                                ? "positive"
+                                : summary.balance < 0
+                                    ? "negative"
+                                    : "neutral"
                                 }`}
                         >
                             R$ {summary.balance.toFixed(2)}
@@ -226,8 +247,8 @@ function Dashboard() {
                                 <div className="wallet-info">
                                     <span
                                         className={`wallet-balance ${wallet.balance >= 0
-                                                ? "positive"
-                                                : "negative"
+                                            ? "positive"
+                                            : "negative"
                                             }`}
                                     >
                                         Saldo: R$ {wallet.balance.toFixed(2)}
