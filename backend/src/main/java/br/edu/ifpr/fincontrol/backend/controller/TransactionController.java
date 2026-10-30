@@ -3,13 +3,16 @@ package br.edu.ifpr.fincontrol.backend.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import br.edu.ifpr.fincontrol.backend.dto.request.TransactionRequest;
 import br.edu.ifpr.fincontrol.backend.dto.response.TransactionResponse;
 import br.edu.ifpr.fincontrol.backend.security.UserDetailsImpl;
+import br.edu.ifpr.fincontrol.backend.service.TransactionEventsService;
 import br.edu.ifpr.fincontrol.backend.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class TransactionController {
 
     private final TransactionService service;
+    private final TransactionEventsService eventsService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -37,6 +41,14 @@ public class TransactionController {
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         return service.findAllByUserId(userDetails.getUser().getId());
+
+    }
+
+    @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        return eventsService.register(userDetails.getUser().getId());
 
     }
 
