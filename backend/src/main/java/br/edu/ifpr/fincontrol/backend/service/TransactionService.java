@@ -25,6 +25,7 @@ public class TransactionService {
         private final WalletRepository walletRepository;
         private final CategoryRepository categoryRepository;
         private final WalletMemberService walletMemberService;
+        private final TransactionEventsService transactionEventsService;
 
         public TransactionResponse create(TransactionRequest request, Long userId) {
 
@@ -55,6 +56,8 @@ public class TransactionService {
                                 .build();
 
                 repository.save(transaction);
+
+                notifyWalletMembers(wallet.getId(), userId, "created");
 
                 return toResponse(transaction);
         }
@@ -90,8 +93,10 @@ public class TransactionService {
                                 .orElseThrow(
                                                 () -> new ResourceNotFoundException("Transação não encontrada."));
 
+                Wallet oldWallet = transaction.getWallet();
+
                 WalletRole role = walletMemberService.getUserRole(
-                                transaction.getWallet().getId(),
+                                oldWallet.getId(),
                                 userId);
 
                 if (role == WalletRole.VISUALIZADOR) {
@@ -112,7 +117,7 @@ public class TransactionService {
                                         "Usuário sem permissão para utilizar esta carteira.");
                 }
 
-                boolean sameWallet = transaction.getWallet().getId().equals(wallet.getId());
+                boolean sameWallet = oldWallet.getId().equals(wallet.getId());
 
                 Category category = findCategoryForWallet(
                                 request.getCategoryId(),
@@ -129,6 +134,12 @@ public class TransactionService {
 
                 repository.save(transaction);
 
+                notifyWalletMembers(oldWallet.getId(), userId, "updated");
+
+                if (!sameWallet) {
+                        notifyWalletMembers(wallet.getId(), userId, "updated");
+                }
+
                 return toResponse(transaction);
         }
 
@@ -138,8 +149,10 @@ public class TransactionService {
                                 .orElseThrow(
                                                 () -> new ResourceNotFoundException("Transação não encontrada."));
 
+                Long walletId = transaction.getWallet().getId();
+
                 WalletRole role = walletMemberService.getUserRole(
-                                transaction.getWallet().getId(),
+                                walletId,
                                 userId);
 
                 if (role != WalletRole.DONO) {
@@ -148,6 +161,16 @@ public class TransactionService {
                 }
 
                 repository.delete(transaction);
+
+                notifyWalletMembers(walletId, userId, "deleted");
+        }
+
+        private void notifyWalletMembers(Long walletId, Long currentUserId, String action) {
+
+                walletMemberService.findAll(walletId, currentUserId)
+                                .forEach(member -> transactionEventsService.notifyUser(
+                                                member.getUserId(),
+                                                action));
         }
 
         private Category findCategoryForWallet(
