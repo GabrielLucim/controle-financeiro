@@ -1,5 +1,7 @@
+
 package br.edu.ifpr.fincontrol.backend.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +17,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findDistinctByWalletOwnerIdOrWalletMembersUserId(
             Long ownerId,
             Long userId);
+
+    List<Transaction> findByWalletIdAndDateBetweenOrderByDateDesc(
+            Long walletId,
+            LocalDate startDate,
+            LocalDate endDate);
 }
