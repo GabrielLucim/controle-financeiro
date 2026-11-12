@@ -1,4 +1,3 @@
-
 package br.edu.ifpr.fincontrol.backend.dto.request.ai;
 
 import jakarta.validation.constraints.Max;

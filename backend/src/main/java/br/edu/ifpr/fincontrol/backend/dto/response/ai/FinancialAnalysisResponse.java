@@ -1,4 +1,3 @@
-
 package br.edu.ifpr.fincontrol.backend.dto.response.ai;
 
 import lombok.AllArgsConstructor;
