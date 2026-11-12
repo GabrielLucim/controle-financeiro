@@ -67,6 +67,17 @@ const Header = () => {
                         </NavLink>
 
                         <NavLink
+                            to="/app/relatorios"
+                            className={({ isActive }) =>
+                                isActive
+                                    ? "header-link active"
+                                    : "header-link"
+                            }
+                        >
+                            Relatórios
+                        </NavLink>
+
+                        <NavLink
                             to="/app/perfil"
                             className={({ isActive }) =>
                                 isActive

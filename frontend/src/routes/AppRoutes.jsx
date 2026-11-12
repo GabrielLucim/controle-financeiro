@@ -9,6 +9,7 @@ import Profile from "../pages/Profile/Profile.jsx";
 import { ProtectedRoute } from "../components/ProtectedRoute.jsx";
 import Transactions from "../pages/Transactions/Transactions.jsx";
 import Categories from "../pages/Categories/Categories.jsx";
+import Reports from "../pages/Reports/Reports.jsx";
 
 function AppRoutes() {
     return (
@@ -54,6 +55,15 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <Categories />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/app/relatorios"
+                    element={
+                        <ProtectedRoute>
+                            <Reports />
                         </ProtectedRoute>
                     }
                 />
