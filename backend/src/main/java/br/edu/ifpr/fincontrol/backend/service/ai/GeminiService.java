@@ -11,12 +11,15 @@ import com.google.genai.Client;
 import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
+import com.google.genai.types.HttpOptions;
 import com.google.genai.types.Part;
 
 @Service
 public class GeminiService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeminiService.class);
+
+    private static final int REQUEST_TIMEOUT_MS = 120_000;
 
     @Value("${gemini.api-key:}")
     private String apiKey;
@@ -35,8 +38,8 @@ public class GeminiService {
 
         if (apiKey == null || apiKey.isBlank()) {
             throw new ResponseStatusException(
-                HttpStatus.SERVICE_UNAVAILABLE,
-                "A integração com Gemini não está configurada. Configure a variável GOOGLE_API_KEY.");
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "A integração com Gemini não está configurada. Configure a variável GOOGLE_API_KEY.");
         }
 
         try {
@@ -45,7 +48,6 @@ public class GeminiService {
                     Part.fromText(systemInstruction));
 
             GenerateContentConfig config = GenerateContentConfig.builder()
-                    .candidateCount(1)
                     .maxOutputTokens(maxOutputTokens)
                     .systemInstruction(instruction)
                     .build();
@@ -53,12 +55,18 @@ public class GeminiService {
             GenerateContentResponse response = getClient().models
                     .generateContent(model, prompt, config);
 
+            if (response == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_GATEWAY,
+                        "O Gemini não retornou uma resposta.");
+            }
+
             String generatedText = response.text();
 
             if (generatedText == null || generatedText.isBlank()) {
                 throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "O Gemini não retornou uma análise válida.");
+                        HttpStatus.BAD_GATEWAY,
+                        "O Gemini não retornou uma análise válida.");
             }
 
             return generatedText.trim();
@@ -70,12 +78,13 @@ public class GeminiService {
         } catch (Exception exception) {
 
             LOGGER.error(
-                "Erro ao comunicar com a API Gemini. Tipo: {}",
-                exception.getClass().getSimpleName());
+                    "Erro ao comunicar com a API Gemini. Tipo: {}. Mensagem: {}",
+                    exception.getClass().getSimpleName(),
+                    exception.getMessage());
 
             throw new ResponseStatusException(
-                HttpStatus.BAD_GATEWAY,
-                "Não foi possível gerar a análise financeira no momento.");
+                    HttpStatus.BAD_GATEWAY,
+                    "Não foi possível gerar a análise financeira no momento.");
         }
     }
 
@@ -88,6 +97,10 @@ public class GeminiService {
                 if (currentClient == null) {
                     currentClient = Client.builder()
                             .apiKey(apiKey)
+                            .httpOptions(
+                                    HttpOptions.builder()
+                                            .timeout(REQUEST_TIMEOUT_MS)
+                                            .build())
                             .build();
                     client = currentClient;
                 }
