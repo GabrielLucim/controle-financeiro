@@ -10,6 +10,7 @@ import {
 import Header from "../../components/Global/Header/Header";
 import Footer from "../../components/Global/Footer/Footer";
 import { reportService } from "../../services/reportService";
+import { aiService } from "../../services/aiService";
 import { walletService } from "../../services/walletService";
 import "./Reports.css";
 
@@ -146,6 +147,9 @@ function Reports() {
     const [loadingWallets, setLoadingWallets] = useState(true);
     const [loadingReport, setLoadingReport] = useState(false);
     const [error, setError] = useState("");
+    const [financialAnalysis, setFinancialAnalysis] = useState(null);
+    const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+    const [analysisError, setAnalysisError] = useState("");
 
     useEffect(() => {
         let isActive = true;
@@ -198,6 +202,11 @@ function Reports() {
         (month) => month.value === Number(selectedMonth)
     )?.label;
 
+    const clearFinancialAnalysis = () => {
+        setFinancialAnalysis(null);
+        setAnalysisError("");
+    };
+
     const handleGenerateReport = async (event) => {
         event.preventDefault();
 
@@ -223,6 +232,7 @@ function Reports() {
             setLoadingReport(true);
             setError("");
             setReport(null);
+            clearFinancialAnalysis();
 
             const data = await reportService.getMonthly(
                 selectedWalletId,
@@ -240,6 +250,34 @@ function Reports() {
             );
         } finally {
             setLoadingReport(false);
+        }
+    };
+
+    const handleGenerateAnalysis = async () => {
+        if (!report || !selectedWalletId) return;
+
+        try {
+            setLoadingAnalysis(true);
+            setAnalysisError("");
+            setFinancialAnalysis(null);
+
+            const data = await aiService.getFinancialAnalysis(
+                Number(selectedWalletId),
+                Number(selectedYear),
+                Number(selectedMonth)
+            );
+
+            setFinancialAnalysis(data);
+        } catch (requestError) {
+            console.error("Erro ao gerar análise financeira com IA:", requestError);
+
+            setAnalysisError(
+                requestError.response?.data?.message ||
+                requestError.response?.data?.detail ||
+                "Não foi possível gerar a análise financeira. Tente novamente."
+            );
+        } finally {
+            setLoadingAnalysis(false);
         }
     };
 
@@ -274,8 +312,9 @@ function Reports() {
                                 setSelectedWalletId(event.target.value);
                                 setReport(null);
                                 setError("");
+                                clearFinancialAnalysis();
                             }}
-                            disabled={loadingWallets || wallets.length === 0}
+                            disabled={loadingWallets || wallets.length === 0 || loadingAnalysis}
                             required
                         >
                             <option value="">
@@ -302,10 +341,12 @@ function Reports() {
                         <select
                             id="report-month"
                             value={selectedMonth}
+                            disabled={loadingAnalysis}
                             onChange={(event) => {
                                 setSelectedMonth(event.target.value);
                                 setReport(null);
                                 setError("");
+                                clearFinancialAnalysis();
                             }}
                         >
                             {MONTHS.map((month) => (
@@ -327,6 +368,7 @@ function Reports() {
                         <input
                             id="report-year"
                             type="number"
+                            disabled={loadingAnalysis}
                             min="1"
                             max="9999"
                             step="1"
@@ -335,6 +377,7 @@ function Reports() {
                                 setSelectedYear(event.target.value);
                                 setReport(null);
                                 setError("");
+                                clearFinancialAnalysis();
                             }}
                         />
                     </div>
@@ -342,7 +385,7 @@ function Reports() {
                     <button
                         type="submit"
                         className="reports-generate-button"
-                        disabled={loadingWallets || wallets.length === 0 || loadingReport}
+                        disabled={loadingWallets || wallets.length === 0 || loadingReport || loadingAnalysis}
                     >
                         {loadingReport ? "Gerando..." : "Gerar relatório"}
                     </button>
@@ -419,13 +462,62 @@ function Reports() {
 
                                 <strong
                                     className={`reports-summary-value ${Number(report.balance) >= 0
-                                            ? "income"
-                                            : "expense"
+                                        ? "income"
+                                        : "expense"
                                         }`}
                                 >
                                     {formatCurrency(report.balance)}
                                 </strong>
                             </article>
+                        </section>
+
+                        <section className="reports-ai-section">
+                            <div className="reports-ai-header">
+                                <div>
+                                    <h2>Análise financeira com IA</h2>
+                                    <p>
+                                        Gere uma análise dos resultados desta carteira e deste período.
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="reports-ai-button"
+                                    onClick={handleGenerateAnalysis}
+                                    disabled={loadingAnalysis}
+                                >
+                                    {loadingAnalysis
+                                        ? "Gerando análise..."
+                                        : "Gerar análise com IA"}
+                                </button>
+                            </div>
+
+                            {loadingAnalysis && (
+                                <div className="reports-ai-loading" role="status">
+                                    A IA está analisando os dados financeiros do período...
+                                </div>
+                            )}
+
+                            {analysisError && (
+                                <div className="reports-ai-alert" role="alert">
+                                    {analysisError}
+                                </div>
+                            )}
+
+                            {financialAnalysis && (
+                                <div className="reports-ai-result">
+                                    <div className="reports-ai-result-heading">
+                                        <h3>{financialAnalysis.walletName}</h3>
+                                        <span>
+                                            {MONTHS.find(
+                                                (month) => month.value === financialAnalysis.month
+                                            )?.label} de {financialAnalysis.year}
+                                        </span>
+                                    </div>
+
+                                    <p>{financialAnalysis.analysis}</p>
+                                </div>
+                            )}
                         </section>
 
                         <section className="reports-charts-grid">
