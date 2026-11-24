@@ -20,7 +20,10 @@ import br.edu.ifpr.fincontrol.backend.service.TransactionService;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name = "Transações", description = "Cadastro, consulta, edição, exclusão e atualização em tempo real")
 @RestController
 @RequestMapping("/transactions")
 @RequiredArgsConstructor
@@ -59,7 +62,8 @@ public class TransactionController {
                 .body(Map.of("ticket", ticket));
 
     }
-
+    
+    @SecurityRequirements
     @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(
             @RequestParam("ticket") String ticket,

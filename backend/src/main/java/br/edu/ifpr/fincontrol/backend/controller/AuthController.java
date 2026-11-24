@@ -12,7 +12,11 @@ import br.edu.ifpr.fincontrol.backend.dto.response.UserResponse;
 import br.edu.ifpr.fincontrol.backend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name = "Autenticação", description = "Cadastro, login e recuperação de senha")
+@SecurityRequirements
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor

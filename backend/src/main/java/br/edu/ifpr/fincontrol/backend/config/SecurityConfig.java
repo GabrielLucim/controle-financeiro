@@ -22,45 +22,53 @@ public class SecurityConfig {
         private final JwtFilter jwtFilter;
         private final AuthenticationProvider authenticationProvider;
 
-        @Bean
-        SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-                http
-                        .csrf(csrf -> csrf.disable())
-                        .cors(Customizer.withDefaults())
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
 
-                        .headers(headers -> headers
-                                        .frameOptions(frameOptions -> frameOptions.deny())
-                                        .referrerPolicy(referrer -> referrer
-                                                        .policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                                        .permissionsPolicy(permissions -> permissions
-                                                        .policy("camera=(), microphone=(), geolocation=()")))
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.deny())
+                        .referrerPolicy(referrer -> referrer
+                                .policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        .permissionsPolicy(permissions -> permissions
+                                .policy("camera=(), microphone=(), geolocation=()")))
 
-                        .sessionManagement(session -> session
-                                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                        .authenticationProvider(authenticationProvider)
+                .authenticationProvider(authenticationProvider)
 
-                        .authorizeHttpRequests(auth -> auth
-                                        .requestMatchers(
-                                                        "/auth/**",
-                                                        "/actuator/health")
-                                        .permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/auth/**",
+                                "/actuator/health")
+                        .permitAll()
 
-                                        .requestMatchers(HttpMethod.GET, "/transactions/stream")
-                                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/transactions/stream")
+                        .permitAll()
 
-                                        .anyRequest()
-                                        .authenticated())
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs.yaml")
+                        .permitAll()
 
-                        .addFilterBefore(
-                                        jwtFilter,
-                                        UsernamePasswordAuthenticationFilter.class)
+                        .anyRequest()
+                        .authenticated())
 
-                        .addFilterBefore(
-                                        new AuthRateLimitFilter(),
-                                        JwtFilter.class);
+                .addFilterBefore(
+                        jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class)
 
-                return http.build();
-        }
+                .addFilterBefore(
+                        new AuthRateLimitFilter(),
+                        JwtFilter.class);
+
+        return http.build();
+    }
 }
