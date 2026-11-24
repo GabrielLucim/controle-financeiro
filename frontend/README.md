@@ -1,61 +1,176 @@
 # FinControl — Frontend
 
-Frontend do FinControl, aplicação de controle financeiro pessoal e compartilhado. A interface foi desenvolvida com React e Vite e consome a API REST do backend Spring Boot.
+Frontend oficial do **FinControl**, desenvolvido em **React + Vite**, como parte do projeto da disciplina de Engenharia de Software do Instituto Federal do Paraná (IFPR).
 
-## Funcionalidades
+O sistema tem como objetivo fornecer uma interface para gerenciamento financeiro pessoal e compartilhado. Por meio dele, os usuários podem organizar carteiras, acompanhar saldos, registrar receitas e despesas, gerenciar categorias, compartilhar carteiras com outras pessoas e consultar relatórios financeiros.
 
-- Cadastro, login e encerramento de sessão.
-- Recuperação e redefinição de senha por e-mail.
-- Verificação Cloudflare Turnstile no fluxo de login quando solicitada pelo backend.
-- Dashboard com saldo, receitas, despesas e carteiras disponíveis para o usuário.
-- Criação e gerenciamento de carteiras.
-- Compartilhamento de carteiras e gerenciamento de participantes e permissões.
-- Cadastro, consulta, edição e exclusão de transações.
-- Cadastro, consulta, edição e exclusão de categorias.
-- Relatório mensal com totais de receitas e despesas, saldo do período, valores por categoria e lista de transações.
-- Análise textual do relatório mensal por meio da API Gemini.
-- Atualização das telas de Dashboard e Transações por Server-Sent Events (SSE) quando há alterações nas transações de uma carteira compartilhada.
-- Página de perfil com visualização dos dados da conta e alteração de senha.
-- Instalação como Progressive Web App (PWA), com cache de arquivos estáticos e carregamento básico da estrutura da aplicação sem conexão.
+O frontend comunica-se com a API REST desenvolvida em Spring Boot. A autenticação utiliza JWT, enviado nas requisições protegidas por meio do cabeçalho `Authorization`.
 
-O modo offline não armazena dados financeiros nem permite executar operações que dependem do backend. Para consultar ou alterar informações, é necessário estar conectado à API.
+---
 
-## Tecnologias
+# Tecnologias Utilizadas
 
 - React 19
 - Vite 5
-- JavaScript (ES modules)
+- JavaScript (ES Modules)
 - React Router DOM
 - Axios
 - Recharts
-- React Hook Form e Zod
-- React Icons e Lucide React
-- CSS
+- React Hook Form
+- Zod
+- React Icons
+- Lucide React
+- CSS3
+- Context API
 
-## Organização do código
+---
 
-A aplicação separa páginas, componentes reutilizáveis, contexto de autenticação, rotas e serviços de comunicação com a API.
+# Arquitetura
+
+O frontend segue uma arquitetura baseada em componentes, organizada por responsabilidades.
+
+A aplicação é dividida em:
+
+- **Páginas:** telas relacionadas às funcionalidades principais.
+- **Componentes reutilizáveis:** elementos de interface, modais, cabeçalho, rodapé e componentes de apoio.
+- **Serviços:** módulos responsáveis pela comunicação com a API.
+- **Contexto global:** gerenciamento do estado de autenticação.
+- **Rotas:** definição das páginas públicas e protegidas.
+- **Estilos:** arquivos CSS organizados junto às páginas e componentes, além do estilo global.
+
+Toda comunicação HTTP com o backend é realizada pela camada de serviços, utilizando uma instância compartilhada do Axios.
+
+---
+
+# Funcionalidades Implementadas
+
+## Autenticação
+
+- Login de usuários.
+- Cadastro de usuários.
+- Logout.
+- Persistência da sessão utilizando JWT no LocalStorage.
+- Proteção das rotas internas.
+- Recuperação de senha por e-mail.
+- Redefinição de senha por meio de um token temporário.
+- Integração com Cloudflare Turnstile no login quando a API solicita a verificação após tentativas inválidas.
+
+## Dashboard
+
+- Saudação personalizada.
+- Resumo financeiro com saldo, receitas e despesas.
+- Listagem das carteiras disponíveis para o usuário.
+- Acesso às transações de uma carteira selecionada.
+- Criação e exclusão de carteiras.
+- Acesso ao gerenciamento de participantes das carteiras compartilhadas.
+- Atualização dos dados quando uma alteração em transações é recebida pelo SSE.
+
+## Carteiras
+
+- Listagem das carteiras do usuário.
+- Criação de carteiras.
+- Exclusão de carteiras.
+- Compartilhamento de carteiras com outros usuários.
+- Listagem dos participantes de uma carteira.
+- Inclusão, alteração de papel e remoção de participantes.
+
+Os papéis disponíveis no backend são `DONO`, `EDITOR` e `VISUALIZADOR`. As permissões para cada operação são verificadas pela API.
+
+## Categorias
+
+- Listagem de categorias.
+- Criação de categorias.
+- Edição de categorias.
+- Exclusão de categorias.
+- Consulta de categorias relacionadas às carteiras, quando aplicável.
+
+## Transações
+
+- Listagem de transações.
+- Criação de receitas e despesas.
+- Edição de transações.
+- Exclusão de transações.
+- Filtro de transações por carteira.
+- Atualização automática da listagem quando outro membro realiza uma alteração em uma carteira compartilhada.
+- Indicador do estado da conexão em tempo real.
+
+## Relatórios
+
+- Seleção de carteira, mês e ano.
+- Resumo do período com total de receitas, despesas e saldo.
+- Quantidade de transações do período.
+- Gráficos e listagens de valores agrupados por categoria.
+- Extrato das transações que compõem o relatório.
+
+## Análise Financeira com IA
+
+A página de Relatórios permite solicitar uma análise textual dos dados do mês selecionado. O frontend envia à API a carteira, o ano e o mês; o backend consulta o relatório e utiliza a integração com Google Gemini para gerar a análise.
+
+A chave privada da API Gemini fica somente no backend. O frontend não acessa o provedor de IA diretamente.
+
+## Usuário e Perfil
+
+- Visualização dos dados da conta.
+- Alteração de senha.
+- Acesso às funcionalidades de autenticação e recuperação de senha.
+
+## Progressive Web App (PWA)
+
+- Manifesto configurado para instalação da aplicação.
+- Ícones nos tamanhos 192 × 192 e 512 × 512.
+- Service worker registrado na versão de produção.
+- Cache do HTML inicial e de arquivos estáticos necessários para abrir a estrutura do frontend.
+- Carregamento básico da aplicação quando o dispositivo está sem conexão.
+
+O modo offline não armazena dados financeiros e não permite realizar operações que dependem do backend. Consultas, autenticação, criação e alteração de informações continuam exigindo conexão com a API.
+
+---
+
+# Integração com Backend
+
+O frontend utiliza requisições HTTP reais para acessar os dados persistidos no banco de dados pelo backend. As estruturas mockadas utilizadas durante o desenvolvimento foram substituídas pela comunicação com os endpoints REST.
+
+A autenticação utiliza JWT enviado automaticamente pelo Axios no cabeçalho:
+
+```http
+Authorization: Bearer <token>
+```
+
+A URL da API é configurada pela variável `VITE_API_URL`.
+
+---
+
+# Estrutura do Projeto
 
 ```text
 frontend/
+│
 ├── public/
 │   ├── icons/
+│   │   ├── pwa-192.png
+│   │   └── pwa-512.png
 │   ├── favicon.svg
 │   ├── icons.svg
 │   ├── manifest.json
 │   ├── pwa-icon.svg
 │   └── sw.js
+│
 ├── src/
 │   ├── components/
 │   │   ├── AddWalletMemberModal/
 │   │   ├── Category/
 │   │   ├── Global/
+│   │   │   ├── DeleteConfirmModal/
+│   │   │   ├── Footer/
+│   │   │   └── Header/
 │   │   ├── Transactions/
 │   │   ├── Wallet/
 │   │   ├── WalletMembersModal/
 │   │   └── ProtectedRoute.jsx
+│   │
 │   ├── context/
 │   │   └── AuthContext.jsx
+│   │
 │   ├── pages/
 │   │   ├── Categories/
 │   │   ├── Dashboard/
@@ -66,8 +181,10 @@ frontend/
 │   │   ├── Reports/
 │   │   ├── ResetPassword/
 │   │   └── Transactions/
+│   │
 │   ├── routes/
 │   │   └── AppRoutes.jsx
+│   │
 │   ├── services/
 │   │   ├── aiService.js
 │   │   ├── api.js
@@ -79,53 +196,190 @@ frontend/
 │   │   ├── transactionService.js
 │   │   ├── walletMemberService.js
 │   │   └── walletService.js
+│   │
 │   ├── App.jsx
 │   ├── index.css
 │   └── main.jsx
+│
 ├── .env.example
 ├── index.html
 ├── package.json
 ├── package-lock.json
-└── vite.config.js
+├── vite.config.js
+└── README.md
 ```
 
-### Páginas e rotas
+---
 
-| Caminho | Acesso | Página |
-|---|---|---|
-| `/login` | Público | Login |
-| `/cadastro` | Público | Cadastro |
-| `/recuperar-senha` | Público | Solicitação de recuperação de senha |
-| `/redefinir-senha/:token` | Público | Redefinição de senha |
-| `/app/dashboard` | Autenticado | Dashboard e carteiras |
-| `/app/transacoes` | Autenticado | Transações |
-| `/app/categorias` | Autenticado | Categorias |
-| `/app/relatorios` | Autenticado | Relatórios e análise financeira |
-| `/app/perfil` | Autenticado | Perfil e alteração de senha |
+# Organização da Aplicação
 
-A definição das rotas está em `src/routes/AppRoutes.jsx`. O componente `ProtectedRoute` impede a abertura das páginas internas sem uma sessão autenticada.
+## Components
 
-### Comunicação com a API
+A pasta **components** concentra os componentes reutilizáveis do sistema.
 
-As chamadas HTTP ficam em `src/services/` e utilizam a instância Axios definida em `src/services/api.js`. A URL base é lida de `VITE_API_URL`.
+Entre eles estão:
 
-O token JWT é mantido no `localStorage` pelo `AuthContext` e enviado pelo Axios no cabeçalho:
+- Cabeçalho e rodapé.
+- Modais de confirmação e formulários.
+- Componentes de carteiras.
+- Componentes de participantes de carteiras compartilhadas.
+- Componentes de categorias.
+- Componentes de transações.
+- `ProtectedRoute`, responsável por restringir o acesso às páginas internas.
 
-```http
-Authorization: Bearer <token>
+Essa divisão evita repetição de código e facilita a manutenção da interface.
+
+## Pages
+
+Cada funcionalidade principal possui sua própria página:
+
+- **Login:** autenticação do usuário.
+- **Register:** cadastro de usuário.
+- **Dashboard:** resumo financeiro e gerenciamento de carteiras.
+- **ForgotPassword:** solicitação de recuperação de senha.
+- **ResetPassword:** redefinição de senha pelo token recebido.
+- **Transactions:** consulta e gerenciamento de transações.
+- **Categories:** gerenciamento de categorias.
+- **Reports:** relatórios mensais e análise com IA.
+- **Profile:** informações da conta e alteração de senha.
+
+Cada página concentra a lógica relacionada à sua funcionalidade e utiliza componentes e serviços quando necessário.
+
+## Services
+
+Toda comunicação com o backend é realizada pela camada de serviços. Cada serviço encapsula as chamadas relacionadas a uma parte do sistema.
+
+| Serviço | Responsabilidade |
+|---|---|
+| `api.js` | Instância Axios, URL base e envio automático do JWT. |
+| `authService.js` | Login, cadastro, recuperação, redefinição e alteração de senha. |
+| `dashboardService.js` | Consulta dos dados do dashboard. |
+| `walletService.js` | Operações com carteiras. |
+| `walletMemberService.js` | Gerenciamento dos participantes das carteiras. |
+| `transactionService.js` | Operações com transações. |
+| `transactionEventService.js` | Emissão de ticket e conexão com o fluxo SSE. |
+| `categoryService.js` | Operações com categorias. |
+| `reportService.js` | Consulta dos relatórios mensais. |
+| `aiService.js` | Solicitação de análise financeira à API do backend. |
+
+Essa separação evita chamadas HTTP diretamente dentro das páginas e mantém a comunicação com a API centralizada.
+
+## Context
+
+O gerenciamento da autenticação é realizado através da Context API do React.
+
+O `AuthContext` é responsável por:
+
+- Armazenar os dados do usuário autenticado.
+- Armazenar o token JWT.
+- Realizar login.
+- Realizar logout.
+- Restaurar os dados da sessão após atualizar a página, utilizando o LocalStorage.
+
+## Organização dos Estilos
+
+As páginas e os componentes possuem arquivos CSS próprios, organizados junto aos respectivos módulos. O arquivo `src/index.css` concentra os estilos globais.
+
+Exemplo:
+
+```text
+Dashboard/
+├── Dashboard.jsx
+└── Dashboard.css
 ```
 
-O serviço `transactionEventService.js` solicita um ticket temporário à API e abre a conexão SSE com `EventSource`. Quando recebe o evento `transaction-changed`, as páginas inscritas atualizam os dados exibidos.
+Essa abordagem facilita a manutenção e reduz conflitos entre estilos de diferentes partes da aplicação.
 
-## Requisitos para executar
+---
 
-- Node.js instalado.
-- npm instalado.
-- Backend do FinControl em execução e banco de dados configurado para que as funcionalidades que consultam ou alteram dados funcionem.
+# Rotas da Aplicação
 
-## Configuração do ambiente
+As rotas são organizadas através do React Router DOM. O arquivo responsável pelo gerenciamento é:
 
-Na pasta `frontend`, crie o arquivo `.env` a partir do exemplo:
+```text
+src/routes/AppRoutes.jsx
+```
+
+A rota inicial `/` redireciona para `/login`.
+
+## Rotas Públicas
+
+| Caminho | Funcionalidade |
+|---|---|
+| `/login` | Login. |
+| `/cadastro` | Cadastro. |
+| `/recuperar-senha` | Solicitação de recuperação de senha. |
+| `/redefinir-senha/:token` | Redefinição de senha por token. |
+
+## Rotas Protegidas
+
+| Caminho | Funcionalidade |
+|---|---|
+| `/app/dashboard` | Dashboard e carteiras. |
+| `/app/transacoes` | Transações. |
+| `/app/categorias` | Categorias. |
+| `/app/relatorios` | Relatórios e análise financeira. |
+| `/app/perfil` | Perfil e alteração de senha. |
+
+O acesso às rotas protegidas é controlado pelo componente `ProtectedRoute.jsx`.
+
+---
+
+# Fluxo de Autenticação
+
+O fluxo de autenticação da aplicação funciona da seguinte forma:
+
+1. O usuário realiza login informando e-mail e senha.
+2. O frontend envia as credenciais para o endpoint `/auth/login`.
+3. O backend valida as credenciais e, quando necessário, exige a verificação do Cloudflare Turnstile.
+4. Em caso de sucesso, a API retorna o token JWT e os dados do usuário.
+5. O frontend armazena essas informações no LocalStorage.
+6. O `AuthContext` atualiza o estado global da aplicação.
+7. O Axios passa a enviar automaticamente o token nas requisições protegidas.
+8. Ao realizar logout, o token e os dados do usuário são removidos do LocalStorage.
+
+O token fica armazenado no navegador. Portanto, não deve ser tratado como um segredo inacessível ao JavaScript da página.
+
+---
+
+# Recuperação de Senha
+
+O fluxo de recuperação de senha é integrado ao backend e utiliza envio de e-mail.
+
+O funcionamento é:
+
+1. O usuário informa seu e-mail na página de recuperação.
+2. O backend gera um token temporário e envia um link por e-mail.
+3. O usuário acessa o link recebido, que abre a página `/redefinir-senha/:token`.
+4. A página informa o início do processo de redefinição ao backend.
+5. O usuário informa e confirma a nova senha.
+6. O backend valida o token e altera a senha.
+
+O token possui prazo de validade controlado pelo backend. A redefinição só pode ser concluída com um token válido.
+
+---
+
+# Comunicação em Tempo Real (SSE)
+
+O frontend utiliza **Server-Sent Events (SSE)** para atualizar o Dashboard e a página de Transações quando há alterações em transações de carteiras compartilhadas.
+
+O fluxo implementado é:
+
+1. O frontend solicita um ticket temporário ao endpoint autenticado `POST /transactions/stream-ticket`.
+2. O backend retorna um ticket de uso único.
+3. O frontend abre uma conexão `EventSource` com `GET /transactions/stream?ticket=...`.
+4. Quando uma transação é criada, alterada ou excluída, os usuários conectados que participam da carteira recebem o evento `transaction-changed`.
+5. As páginas inscritas consultam novamente os dados necessários para atualizar a interface.
+
+O serviço `transactionEventService.js` controla o estado da conexão e tenta reconectar quando ocorre uma interrupção. O fluxo de eventos não substitui as requisições REST utilizadas para consultar e alterar os dados.
+
+---
+
+# Variáveis de Ambiente
+
+A aplicação utiliza variáveis de ambiente para configurar o endereço da API e a chave pública do Cloudflare Turnstile.
+
+Crie um arquivo `.env` na raiz do frontend a partir do exemplo:
 
 ```powershell
 Copy-Item .env.example .env
@@ -133,23 +387,51 @@ Copy-Item .env.example .env
 
 Configure as variáveis:
 
-| Variável | Uso |
-|---|---|
-| `VITE_API_URL` | Endereço base da API. No ambiente local, use `http://localhost:8080`. |
-| `VITE_TURNSTILE_SITE_KEY` | Chave pública do site Cloudflare Turnstile usada pelo componente de verificação no login. |
+| Variável | Finalidade | Exemplo local |
+|---|---|---|
+| `VITE_API_URL` | URL base da API do backend. | `http://localhost:8080` |
+| `VITE_TURNSTILE_SITE_KEY` | Chave pública do site Cloudflare Turnstile exibido no login. | Chave pública fornecida pelo Cloudflare. |
 
-O arquivo `.env.example` já contém os nomes das variáveis e valores de exemplo. Ajuste-os conforme o ambiente. A chave pública do Turnstile deve corresponder à chave secreta configurada no backend.
+O arquivo `.env.example` contém os nomes das variáveis. Ajuste os valores conforme o ambiente.
 
-Variáveis com prefixo `VITE_` são incorporadas ao bundle disponibilizado ao navegador. Não coloque senhas, tokens privados ou chaves secretas nessas variáveis.
+A chave pública do Turnstile deve corresponder à chave secreta configurada no backend. Variáveis com prefixo `VITE_` são incorporadas ao código enviado ao navegador. Não coloque senhas, tokens privados ou chaves secretas nessas variáveis.
 
-## Instalação e execução
+---
 
-A partir da raiz do repositório:
+# Requisitos para Executar
+
+- Node.js.
+- npm.
+- Backend do FinControl em execução.
+- Banco de dados e integrações do backend configurados para utilizar as funcionalidades que dependem deles.
+
+---
+
+# Instalação
+
+Clone o repositório:
 
 ```bash
-cd frontend
+git clone https://github.com/GabrielLucim/controle-financeiro.git
+```
+
+Entre na pasta do frontend:
+
+```bash
+cd controle-financeiro/frontend
+```
+
+Instale as dependências:
+
+```bash
 npm install
 ```
+
+Crie e configure o arquivo `.env`, conforme a seção de variáveis de ambiente.
+
+---
+
+# Executando a Aplicação
 
 Inicie o servidor de desenvolvimento:
 
@@ -157,11 +439,13 @@ Inicie o servidor de desenvolvimento:
 npm run dev
 ```
 
-Por padrão, o Vite disponibiliza a aplicação em:
+Por padrão, a aplicação estará disponível em:
 
 ```text
 http://localhost:5173
 ```
+
+É necessário que o backend esteja em execução para que as funcionalidades que consultam ou alteram dados estejam disponíveis.
 
 Para gerar a versão de produção:
 
@@ -177,28 +461,91 @@ Para visualizar localmente a versão compilada:
 npm run preview
 ```
 
-Para executar o ESLint:
+Para executar a verificação do ESLint:
 
 ```bash
 npm run lint
 ```
 
-## Progressive Web App (PWA)
+---
 
-O manifesto está em `public/manifest.json`, os ícones ficam em `public/icons/` e o service worker está em `public/sw.js`. O registro do service worker acontece em `src/main.jsx` somente na versão de produção.
+# Progressive Web App (PWA)
 
-Na instalação, o service worker armazena o HTML inicial, o manifesto, os ícones e os arquivos estáticos JS/CSS referenciados pela página. Em uma navegação sem conexão, tenta apresentar o HTML armazenado. As requisições à API não são armazenadas em cache.
+A configuração do PWA está distribuída nos seguintes arquivos:
 
-Para testar o comportamento de produção localmente, execute `npm run build` e depois `npm run preview`. O navegador permite testar recursos de service worker em `localhost`. Em uma hospedagem pública, a instalação do PWA requer HTTPS.
+- `public/manifest.json`: nome, ícones, cores e modo de exibição do aplicativo instalado.
+- `public/icons/`: ícones de 192 × 192 e 512 × 512 pixels.
+- `public/sw.js`: service worker responsável pelo cache do app shell e dos arquivos estáticos.
+- `src/main.jsx`: registra o service worker somente na versão de produção.
 
-## Integração com o backend
+Para testar o PWA localmente, gere a versão de produção e inicie o preview:
 
-O frontend espera que a API esteja acessível pelo endereço definido em `VITE_API_URL`. O backend também precisa permitir a origem do frontend na configuração CORS (`CORS_ALLOWED_ORIGINS`). Consulte o README do backend para configurar banco de dados, e-mail, JWT, Turnstile e Gemini.
+```bash
+npm run build
+npm run preview
+```
 
-## Implantação
+O navegador permite testar service workers em `localhost`. Em um endereço publicado, a instalação do PWA exige HTTPS.
 
-A publicação pública do projeto ainda está em preparação. Os endereços do frontend e da API devem ser registrados aqui depois da conclusão do deploy.
+O cache permite abrir a estrutura do frontend sem conexão, mas não armazena respostas financeiras da API. Recursos como login, consultas, lançamentos, relatórios e análise com IA dependem de conexão com o backend.
 
-## Repositório
+---
 
-[github.com/GabrielLucim/controle-financeiro](https://github.com/GabrielLucim/controle-financeiro)
+# Integração com o Backend
+
+O frontend espera que a API esteja disponível no endereço definido em `VITE_API_URL`.
+
+A configuração da instância Axios encontra-se em:
+
+```text
+src/services/api.js
+```
+
+Quando há um usuário autenticado, o token JWT salvo no LocalStorage é enviado automaticamente pelo cabeçalho:
+
+```http
+Authorization: Bearer <token>
+```
+
+O backend deve permitir a origem do frontend na configuração de CORS, por meio de `CORS_ALLOWED_ORIGINS`. Consulte o README do backend para configurar o banco de dados, JWT, envio de e-mails, Turnstile, Gemini e Swagger/OpenAPI.
+
+---
+
+# Estrutura de Desenvolvimento
+
+O frontend foi desenvolvido priorizando:
+
+- Componentização.
+- Separação de responsabilidades.
+- Reutilização de código.
+- Centralização das chamadas à API.
+- Controle de autenticação e proteção de rotas.
+- Facilidade de manutenção e evolução das funcionalidades.
+
+Cada funcionalidade é organizada em módulos, permitindo que novas telas e serviços sejam adicionados sem concentrar toda a lógica em um único arquivo.
+
+---
+
+# Implantação
+
+A publicação pública do projeto está em preparação. Após a conclusão do deploy, os endereços do frontend e da API serão registrados nesta seção.
+
+---
+
+# Repositório
+
+Frontend:
+
+[https://github.com/GabrielLucim/controle-financeiro](https://github.com/GabrielLucim/controle-financeiro)
+
+---
+
+# Autor
+
+**Gabriel Dos Anjos Lucim**
+
+Instituto Federal do Paraná — IFPR
+
+Curso de Engenharia de Software
+
+Disciplina de Engenharia de Software
