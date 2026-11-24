@@ -1,4 +1,3 @@
-
 package br.edu.ifpr.fincontrol.backend.config;
 
 import org.springframework.context.annotation.Bean;
@@ -10,7 +9,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 
+import br.edu.ifpr.fincontrol.backend.security.AuthRateLimitFilter;
 import br.edu.ifpr.fincontrol.backend.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
 
@@ -25,31 +26,41 @@ public class SecurityConfig {
         SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
                 http
-                                .csrf(csrf -> csrf.disable())
-                                .cors(Customizer.withDefaults())
+                        .csrf(csrf -> csrf.disable())
+                        .cors(Customizer.withDefaults())
 
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .headers(headers -> headers
+                                        .frameOptions(frameOptions -> frameOptions.deny())
+                                        .referrerPolicy(referrer -> referrer
+                                                        .policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                                        .permissionsPolicy(permissions -> permissions
+                                                        .policy("camera=(), microphone=(), geolocation=()")))
 
-                                .authenticationProvider(authenticationProvider)
+                        .sessionManagement(session -> session
+                                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(
-                                                                "/auth/**",
-                                                                "/actuator/health")
-                                                .permitAll()
+                        .authenticationProvider(authenticationProvider)
 
-                                                .requestMatchers(HttpMethod.GET, "/transactions/stream")
-                                                .permitAll()
+                        .authorizeHttpRequests(auth -> auth
+                                        .requestMatchers(
+                                                        "/auth/**",
+                                                        "/actuator/health")
+                                        .permitAll()
 
-                                                .anyRequest()
-                                                .authenticated())
+                                        .requestMatchers(HttpMethod.GET, "/transactions/stream")
+                                        .permitAll()
 
-                                .addFilterBefore(
-                                                jwtFilter,
-                                                UsernamePasswordAuthenticationFilter.class);
+                                        .anyRequest()
+                                        .authenticated())
+
+                        .addFilterBefore(
+                                        jwtFilter,
+                                        UsernamePasswordAuthenticationFilter.class)
+
+                        .addFilterBefore(
+                                        new AuthRateLimitFilter(),
+                                        JwtFilter.class);
 
                 return http.build();
-
         }
 }
