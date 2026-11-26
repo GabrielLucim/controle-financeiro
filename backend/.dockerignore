@@ -1,0 +1,13 @@
+.git
+.gitignore
+.mvn/wrapper/maven-wrapper.jar
+
+target/
+**/target/
+
+application-secrets.properties
+**/application-secrets.properties
+
+*.log
+.idea/
+.vscode/
