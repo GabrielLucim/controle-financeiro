@@ -1,10 +1,11 @@
-
 package br.edu.ifpr.fincontrol.backend.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -20,13 +21,22 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
 
-    @Value("${spring.mail.username}")
+    @Value("${app.mail.enabled:true}")
+    private boolean mailEnabled;
+
+    @Value("${app.mail.from}")
     private String fromEmail;
 
     public void sendPasswordResetEmail(
             String to,
             String name,
             String resetLink) {
+
+        if (!mailEnabled) {
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "A recuperação de senha por e-mail está indisponível nesta implantação.");
+        }
 
         Context context = new Context();
         context.setVariable("userName", name);
@@ -76,14 +86,20 @@ public class EmailService {
             String template,
             Context context) {
 
+        if (!mailEnabled) {
+            log.info(
+                    "Envio do e-mail '{}' desativado neste ambiente.",
+                    subject);
+            return;
+        }
+
         try {
             sendEmail(to, subject, template, context);
         } catch (RuntimeException exception) {
 
             log.error(
-                    "Não foi possível enviar o e-mail '{}' para {}",
+                    "Não foi possível enviar o e-mail '{}'.",
                     subject,
-                    to,
                     exception);
         }
     }
@@ -113,9 +129,8 @@ public class EmailService {
 
         } catch (Exception exception) {
             log.error(
-                    "Erro ao enviar o e-mail '{}' para {}",
+                    "Erro ao enviar o e-mail '{}'.",
                     subject,
-                    to,
                     exception);
 
             throw new RuntimeException(
